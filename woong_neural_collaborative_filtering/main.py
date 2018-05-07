@@ -8,13 +8,11 @@ from data_loader import get_loader
 def main(config):
     cudnn.benchmark = True
 
-    # Create directories if not exist
     if not os.path.exists(config.save_path):
         os.makedirs(config.save_path)
     if not os.path.exists(config.infer_path):
         os.makedirs(config.infer_path)
 
-    # Train and sample the images
     num_users, num_items, train_loader, test_loader, infer_loader \
         = get_loader(data_path = config.data_path,
                      train_negs = config.train_negs,
