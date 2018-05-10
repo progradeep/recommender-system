@@ -1,3 +1,0 @@
-type=command
-dependencies=ConstrainedRecoEncoder,RecoEncoder,ConstrainedRecoEncoderNoLastLayerNl,RecoEncoderNoLastLayerNl
-command=echo 'Done'

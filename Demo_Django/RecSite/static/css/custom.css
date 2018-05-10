@@ -1,0 +1,28 @@
+body {
+    margin: 0px;
+}
+
+.position-relative {
+    font-family: 'Bitter', serif;
+}
+
+
+.recommended-items {
+    font-family: 'Roboto', sans-serif !important;
+}
+
+.row {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.text h2{
+    margin-bottom: 0px;
+}
+
+footer {
+    width: 100%;
+    bottom: 0;
+    position: relative;
+    text-align: center;
+}
