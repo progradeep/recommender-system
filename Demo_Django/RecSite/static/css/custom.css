@@ -6,14 +6,21 @@ body {
     font-family: 'Bitter', serif;
 }
 
+.section-title {
+    font-family: 'Bitter', serif;
+    margin-left: 22px;
+}
 
-.recommended-items {
+
+.recommended-items, .buy-record {
     font-family: 'Roboto', sans-serif !important;
 }
 
 .row {
-    margin-top: 40px;
+    margin-top: 20px;
+    margin-bottom: 50px;
     text-align: center;
+
 }
 
 .text h2{

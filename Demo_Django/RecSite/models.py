@@ -9,11 +9,20 @@ class TopK(models.Model):
         return self.topK
 
 
-class shopDB(models.Model):
-    product_id = models.CharField(max_length=100)
-    clothes = models.CharField(max_length=200)
+class Item(models.Model):
+    itemId = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
     price = models.CharField(max_length=100)
     type = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.product_id
+        return self.itemId
+
+
+class BuyRecord(models.Model):
+    userId = models.CharField(max_length=10)
+    itemIds = models.TextField()
+
+    def __str__(self):
+        return self.itemIds
+

@@ -4,10 +4,14 @@ from import_export.admin import ImportExportModelAdmin
 from .models import *
 
 
-@admin.register(shopDB)
-class ShopDBAdmin(ImportExportModelAdmin):
+@admin.register(Item)
+class Item(ImportExportModelAdmin):
     pass
 
 @admin.register(TopK)
-class ShopDBAdmin(ImportExportModelAdmin):
+class TopK(ImportExportModelAdmin):
+    pass
+
+@admin.register(BuyRecord)
+class BuyRecord(ImportExportModelAdmin):
     pass
