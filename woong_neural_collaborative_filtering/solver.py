@@ -33,6 +33,7 @@ class Solver(object):
         self.test_step = config.test_step
         self.topk = config.topk
         self.use_gpu = config.use_gpu
+
         self.build_model()
 
     def build_model(self):
@@ -41,8 +42,10 @@ class Solver(object):
                 self.model = GMF(self.num_users, self.num_items, self.latent_dim)
             elif self.model_type == 'mlp':
                 self.model = MLP(self.num_users, self.num_items, self.latent_dim)
+
         else:
             self.model = torch.load(self.load_path)
+
         self.optimizer = optim.Adam(self.model.parameters(),
                                     self.lr, [self.beta1, self.beta2])
         if torch.cuda.is_available() and self.use_gpu:
@@ -65,13 +68,28 @@ class Solver(object):
         for i in range(test_negs):
             score[:, i + 1] = self.model(user, neg[:, i]).data
         _, index = torch.topk(score, k = self.topk)
+        # index: indices of largest k elements in score.
+        # index.shape: (max_user_id, self.topk)
 
         zero = torch.zeros(index.size())
+        # zero.shape: (max_user_id, self.topk)
+
         test_in_top_k = (index.float() == zero.float())
+        # test_in_top_k: 1 at index == 0, 0 at others
+        # test_in_top_k.shape: (max_user_id, self.topk)
+
         rank = torch.nonzero(test_in_top_k)[:, -1].float()
+        # rank: indices of nonzero elements in test_in_top_k
+        #       Ex) second row, fifth colmun -> [[ 1, 4] , ,,, ]
+        # rank.shape: (changeable) (3508,)
+
         rank = math.log(2) / torch.log(2 + rank)
+        # IDCG: 1/log2(2+0)
+        # DCG: 1/log2(2+4)
+        # NDCG: log(2)/log(2+4)
 
         hit_ratio = len(rank) / batch_size
+        # hit ratio: number of nonzero elements out of a batch
         ndcg = rank.sum() / batch_size
 
         return hit_ratio, ndcg
