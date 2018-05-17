@@ -17,7 +17,7 @@ import random
 #       -> train_data(len(train_lines)*5, 3):
 #               [[usr id, item id, pos rating],
 #               [usr id, item id, neg rating], ,,, ]
-#       -> test_data(max_user_id, 2 + 99): [usr id, pos item id, neg item ids]
+#       -> test_data(num_user, 2 + 99): [usr id, pos item id, neg item ids]
 #
 # 5. make infer data
 #       -> infer_data(unrated lines, 2): [[usr id, neg item id], ,,, ]
@@ -45,25 +45,76 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
         lines = f.readlines()
 
     ### find user_max, item_max, rating_max
-    max = [0, 0, 0]
+    # convert file to matrix and rename ids
+    user_id_to_num = {}
+    item_id_to_num = {}
+    num_to_user_id = []
+    num_to_item_id = []
+
     for i in range(len(lines)):
         lines[i] = lines[i].split("::")           # "::" for movielens , "," for csv file
         lines[i] = lines[i][:-1]  # remove timestamp
         lines[i] = [int(value) for value in lines[i]]
-        lines[i][0] += - 1        # user_id: 1,2,3,4,... -> 0,1,2,3,...
-        lines[i][1] += - 1        # item_id: 1,2,3,4,... -> 0,1,2,3,...
-        #lines[i].append(1)        # dont use for movielens
-        for j in range(3):
-            if lines[i][j] > max[j]:
-                max[j] = lines[i][j]
+        lines[i].append(1)        # dont use for movielens
 
-    max_user_id = max[0] + 1 # cuz we substracted 1 from usr_id and item_id
-    max_item_id = max[1] + 1
-    max_rating = max[2]
-    print("max_user_id : {}".format(max_user_id))
-    print("max_item_id : {}".format(max_item_id))
+        if not lines[i][0] in user_id_to_num:  # rename user id
+            m = len(num_to_user_id)
+            user_id_to_num[lines[i][0]] = m
+            num_to_user_id.append(lines[i][0])
+            lines[i][0] = m
+        else:
+            m = user_id_to_num[lines[i][0]]
+            lines[i][0] = m
+
+        if not lines[i][1] in item_id_to_num:  # rename item id
+            m = len(num_to_item_id)
+            item_id_to_num[lines[i][1]] = m
+            num_to_item_id.append(lines[i][1])
+            lines[i][1] = m
+        else:
+            m = item_id_to_num[lines[i][1]]
+            lines[i][1] = m
+
+    num_user = len(num_to_user_id)
+    num_item = len(num_to_item_id)
+    print("num_user : {}".format(num_user))
+    print("num_item : {}".format(num_item))
+    max_rating = 1
     print("max_rating : {}".format(max_rating))
 
+    ########################################
+    ### find negative map: user_item_neg_map
+    # find user item mapping
+    user_item_map = {}
+    delete_list = []
+    for i, line in enumerate(lines):
+        user_id = line[0]
+        item_id = line[1]
+        if not user_id in user_item_map:
+            ## when a certain user_id first appears,
+            # make a set containing item_id and append it to map
+            user_set = set([item_id])
+            user_item_map[user_id] = user_set
+
+        else:
+            if item_id in user_item_map[user_id]:
+                delete_list.append(i)
+            ## if the user_id is already in map,
+            # add the item_id to the user's user_set
+            user_item_map[user_id].add(item_id)
+    # user_item_map: {0:{0,2691,1245,2686},1:{1356,3452,743}, ,,, }
+
+    # delete overlap data
+    user_item_neg_map = {}
+    new_lines = [line for i, line in enumerate(lines) if not i in delete_list]
+    lines = new_lines
+
+    # find user item negative mapping
+    all_item_map = set(list(range(num_item)))
+    for user_id in user_item_map:
+        # all_item_map: {0,1,2, ,,, num_item}
+        user_item_neg_map[user_id] = all_item_map - user_item_map[user_id]
+        # user_item_neg_map: items_id that users didn't answer
 
     ########################################
     ### convert numpy array
@@ -71,7 +122,7 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
     lines = np.array(lines)
     # lines.shape: (changeable) (1000209, 3)
 
-    test_index = np.zeros(max_user_id, dtype = np.int32)
+    test_index = np.zeros(num_user, dtype = np.int32)
     # test_index: where the user_id first appears in lines
     for i in range(len(lines)):
         user_id = lines[i, 0]
@@ -84,31 +135,6 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
     # train_index: sorted elements that are in test_index and not in all_index.
     train_lines = lines[train_index]
 
-
-    ########################################
-    ### find negative map: user_item_neg_map
-    user_item_map = {}
-    user_item_neg_map = {}
-    for line in lines:
-        user_id = line[0]
-        item_id = line[1]
-        if not user_id in user_item_map:
-            ## when a certain user_id first appears,
-            # make a set containing item_id and append it to map
-            user_set = set([item_id])
-            user_item_map[user_id] = user_set
-
-        else:
-            ## if the user_id is already in map,
-            # add the item_id to the user's user_set
-            user_item_map[user_id].add(item_id)
-    # user_item_map: {0:{0,2691,1245,2686},1:{1356,3452,743}, ,,, }
-
-    for user_id in user_item_map:
-        all_item_map = set(list(range(max_item_id)))
-        # all_item_map: {0,1,2, ,,, max_item_id}
-        user_item_neg_map[user_id] = all_item_map - user_item_map[user_id]
-        # user_item_neg_map: items_id that users didn't answer
 
 
     ########################################
@@ -137,15 +163,15 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
 
     ### add negative samples to test data
-    test_data = np.zeros((max_user_id, test_negs + 2), dtype = np.int32)
-    # test_data.shape: (max_user_id, 2 + 99)
+    test_data = np.zeros((num_user, test_negs + 2), dtype = np.int32)
+    # test_data.shape: (num_user, 2 + 99)
     # test_data: [ user_id, positive item_id, 99 negative item_ids ]
 
     test_data[:, :2] = lines[test_index][:, :2]
     # test_index: where the user_id first appears in lines
     # test_data[:,:2]: [user id, item id]
 
-    for i in range(max_user_id):
+    for i in range(num_user):
         item_neg_map = user_item_neg_map[i]
         item_neg = random.sample(item_neg_map, test_negs)
         # item_neg: test_negs(default 99) item_ids that are neg per user
@@ -154,7 +180,7 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
     ########################################
     ### get infer data
-    infer_length = max_user_id * max_item_id - len(lines)
+    infer_length = num_user * num_item - len(lines)
     # infer_length = 22869871 (number of items that are not rated)
 
     infer_data = np.zeros((infer_length, 2), dtype = np.int32)
@@ -180,11 +206,11 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
     infer_data = User_Item_Dataset(infer_data)
 
     train_loader = data.DataLoader(train_data, batch_size = batch_size, shuffle = True, num_workers = num_workers)
-    test_loader = data.DataLoader(test_data, batch_size = max_user_id, shuffle = True, num_workers = num_workers)
+    test_loader = data.DataLoader(test_data, batch_size = num_user, shuffle = True, num_workers = num_workers)
     infer_loader = data.DataLoader(infer_data, batch_size = batch_size, shuffle = False, num_workers = num_workers)
 
     print()
     print("Complete Data Processing!!")
     print()
 
-    return max_user_id, max_item_id, train_loader, test_loader, infer_loader
+    return num_user, num_item, train_loader, test_loader, infer_loader, num_to_user_id, num_to_item_id

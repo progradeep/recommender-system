@@ -13,7 +13,7 @@ def main(config):
     if not os.path.exists(config.infer_path):
         os.makedirs(config.infer_path)
 
-    num_users, num_items, train_loader, test_loader, infer_loader \
+    num_users, num_items, train_loader, test_loader, infer_loader, num_to_user_id, num_to_item_id  \
         = get_loader(data_path = config.data_path,
                      train_negs = config.train_negs,
                      test_negs = config.test_negs,
@@ -25,7 +25,7 @@ def main(config):
     if config.mode == 'train':
         solver.train(train_loader, test_loader)
     elif config.mode == 'infer':
-        solver.infer(infer_loader)
+        solver.infer(infer_loader, num_to_user_id, num_to_item_id )
 
 
 if __name__ == '__main__':
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_path', type = str, default = 'save')
     parser.add_argument('--infer_path', type = str, default = 'infer')
     parser.add_argument('--load_path', type = str, default = None)
-    parser.add_argument('--data_path', type = str, default = 'data/ratings.dat')
+    parser.add_argument('--data_path', type = str, default = 'data/buyCategorical.csv')
     parser.add_argument('--log_step', type = int, default = 10000)
     parser.add_argument('--test_step', type = int, default = 1)
     parser.add_argument('--topk', type = int, default = 10)

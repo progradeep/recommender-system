@@ -140,7 +140,7 @@ class Solver(object):
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
             torch.save(self.model, model_path)
 
-    def infer(self, infer_loader):
+    def infer(self, infer_loader, num_to_user_id, num_to_item_id):
 
         print("Start Inference!!")
         print()
@@ -157,13 +157,18 @@ class Solver(object):
 
             user_item_recommender_table[user.data, item.data] = score.data
 
-        _, topk_item_for_user = torch.topk(user_item_recommender_table, k = self.topk)
+        _, topk_item_for_user = torch.topk(user_item_recommender_table, k=self.topk)
 
-        user_item_recommender_table = user_item_recommender_table.numpy()
-        topk_item_for_user = topk_item_for_user.numpy()
+        topk_item_for_user_to_id = np.zeros((self.num_users, self.topk + 1))
+        # (user_id, item_id1, item_id2, ... item_id10..)
+        for user_num, topk_item_num in enumerate(topk_item_for_user):
+            for i in range(self.topk + 1):
+                if i == 0:
+                    topk_item_for_user_to_id[user_num][i] = num_to_user_id[user_num]
+                else:
+                    topk_item_for_user_to_id[user_num][i] = num_to_item_id[topk_item_num[i - 1]]
 
-        np.save(self.infer_path + "/user_item_recommender_table.npy", user_item_recommender_table)
-        np.save(self.infer_path + "/topk_item_for_user.npy", topk_item_for_user)
+        np.save(self.infer_path + "/topk_item_for_user_to_id.npy", topk_item_for_user_to_id)
 
         print("Save file in {}".format(self.infer_path))
         print()
