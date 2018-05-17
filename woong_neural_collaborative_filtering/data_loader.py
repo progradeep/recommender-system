@@ -52,7 +52,7 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
     num_to_item_id = []
 
     for i in range(len(lines)):
-        lines[i] = lines[i].split("::")           # "::" for movielens , "," for csv file
+        lines[i] = lines[i].split(",")           # "::" for movielens , "," for csv file
         lines[i] = lines[i][:-1]  # remove timestamp
         lines[i] = [int(value) for value in lines[i]]
         lines[i].append(1)        # dont use for movielens

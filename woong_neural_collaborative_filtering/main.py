@@ -38,7 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('--latent_dim', type = int, default = 8)
     parser.add_argument('--lr', type = float, default = 0.01)
     parser.add_argument('--reg', type = float, default = 0)
-    parser.add_argument('--num_epochs', type = int, default = 100)
+    parser.add_argument('--num_epochs', type = int, default = 10)
     parser.add_argument('--batch_size', type = int, default = 200)
     parser.add_argument('--beta1', type = float, default = 0.5)  # momentum1 in Adam
     parser.add_argument('--beta2', type = float, default = 0.999)  # momentum2 in Adam
