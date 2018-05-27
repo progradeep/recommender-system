@@ -183,17 +183,25 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
     ########################################
     ### get infer data
-    infer_length = num_user * num_item - len(lines)
+    count = 0
+    N = 393186
+    for user_id in user_item_neg_map:
+        if user_id > N:
+            neg_item_list = list(user_item_neg_map[user_id])
+            for neg_item in neg_item_list:
+                count += 1
+
+    infer_length = count
     # infer_length = 22869871 (number of items that are not rated)
 
     infer_data = np.zeros((infer_length, 2), dtype = np.int32)
     count = 0
     for user_id in user_item_neg_map:
-        neg_item_list = list(user_item_neg_map[user_id])
-        for neg_item in neg_item_list:
-            infer_data[count] = [user_id, neg_item]
-            count += 1
-
+        if user_id > N:
+            neg_item_list = list(user_item_neg_map[user_id])
+            for neg_item in neg_item_list:
+                infer_data[count] = [user_id, neg_item]
+                count += 1
 
     ########################################
     ### normalize
