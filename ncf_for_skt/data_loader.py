@@ -228,7 +228,7 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
 
 if __name__ == "__main__":
-    data_path = ""
+    data_path = "/root/data/KISA_TBC_VIEWS_MERGE.csv"
     num_user, num_item, train_loader, test_loader, infer_loader, num_to_user_id, num_to_item_id \
         = get_loader(data_path=data_path, batch_size = 3)
     print(num_user)
