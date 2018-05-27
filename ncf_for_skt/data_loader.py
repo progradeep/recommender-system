@@ -108,11 +108,11 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
     # user_item_map: {0:{0,2691,1245,2686},1:{1356,3452,743}, ,,, }
 
     # delete overlap data
-    user_item_neg_map = {}
     new_lines = [line for i, line in enumerate(lines) if not i in delete_list]
     lines = new_lines
 
     # find user item negative mapping
+    user_item_neg_map = {}
     all_item_map = set(list(range(num_item)))
     for user_id in user_item_map:
         # all_item_map: {0,1,2, ,,, num_item}
@@ -225,3 +225,31 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
     print()
 
     return num_user, num_item, train_loader, test_loader, infer_loader, num_to_user_id, num_to_item_id
+
+
+if __name__ == "__main__":
+    data_path = ""
+    num_user, num_item, train_loader, test_loader, infer_loader, num_to_user_id, num_to_item_id \
+        = get_loader(data_path=data_path, batch_size = 3)
+    print(num_user)
+    print()
+    print(num_item)
+    print()
+    for i, data in enumerate(train_loader):
+        if i > 0:
+            break
+        else:
+            print(data)
+            print()
+    for i, data in enumerate(test_loader):
+        if i > 0:
+            break
+        else:
+            print(data)
+            print()
+    for i, data in enumerate(infer_loader):
+        if i > 0:
+            break
+        else:
+            print(data)
+            print()
