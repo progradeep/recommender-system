@@ -56,7 +56,7 @@ class Solver(object):
             x = x.cuda()
         return Variable(x)
 
-    def cal_hit_ratio_and_ndcg(self, data):
+    def hit_ratio_ndcg_map(self, data):
         user = data[:, 0]
         pos = data[:, 1]
         neg = data[:, 2:]
@@ -83,6 +83,8 @@ class Solver(object):
         #       Ex) second row, fifth colmun -> [[ 1, 4] , ,,, ]
         # rank.shape: (changeable) (3508,)
 
+        map = (1 / (rank + 1)).sum() / batch_size
+
         rank = math.log(2) / torch.log(2 + rank)
         # IDCG: 1/log2(2+0)
         # DCG: 1/log2(2+4)
@@ -92,7 +94,7 @@ class Solver(object):
         # hit ratio: number of nonzero elements out of a batch
         ndcg = rank.sum() / batch_size
 
-        return hit_ratio, ndcg
+        return hit_ratio, ndcg, map
 
     def train(self, train_loader, test_loader):
 
@@ -131,10 +133,10 @@ class Solver(object):
                 self.model.eval()
                 for i, data in enumerate(test_loader):
                     data = self.to_variable(data)
-                    hit_ratio, ndcg = self.cal_hit_ratio_and_ndcg(data)
+                    hit_ratio, ndcg, map = self.hit_ratio_ndcg_map(data)
                     print()
-                    print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f'
-                          % (epoch + 1, self.num_epochs, hit_ratio, ndcg))
+                    print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f, MAP: %.4f'
+                          % (epoch + 1, self.num_epochs, hit_ratio, ndcg, map))
                     print()
 
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
