@@ -140,7 +140,7 @@ class Solver(object):
                 self.model.eval()
                 for i, data in enumerate(test_loader):
                     data = self.to_variable(data)
-                    hit_ratio, ndcg, map = self.hit_ratio_ndcg_map(data)
+                    hit_ratio, ndcg, mAP = self.hit_ratio_ndcg_map(data)
                     print()
                     print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f, MAP: %.4f'
                           % (epoch + 1, self.num_epochs, hit_ratio, ndcg, mAP))
