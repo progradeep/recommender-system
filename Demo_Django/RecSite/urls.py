@@ -6,4 +6,5 @@ from RecSite.views import *
 
 urlpatterns = [
     url(r'^$', main, name= 'main'),
+    url(r'^search$',show_results, name='show_results')
 ]

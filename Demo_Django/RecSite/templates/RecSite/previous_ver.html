@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light">
+        <div class="col-md-5 p-lg-5 mx-auto my-5">
+            <h1>PrograPick</h1>
+            <p class="lead font-weight-normal">Search Result For User {{query}}</p>
+            <a class="btn btn-secondary" href="/" role="button">Home</a>
+        </div>
+    </div>
+
+
+    <div class="buy-record" style = "max-width: 1080px; margin:auto; margin-bottom: 100px">
+        <h2 class="section-title">Purchased Items</h2>
+        {% if buy_items %}
+
+        {% for item in buy_items %}
+        {% if forloop.counter0|divisibleby:4 %}
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text">
+                    <h2>{{ forloop.counter }}.</h2>
+                    <p style="min-height: 132px">{{item.name}}<br>{{item.price}}</p>
+                </div>
+                <div class="img">
+                    <img style="height: 400px" src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.itemId}}.jpg">
+                </div>
+            </div>
+
+            {% else %}
+            <div class="col-md-3">
+                <div class="text">
+                    <h2>{{ forloop.counter }}.</h2>
+                    <p style="min-height: 132px">{{item.name}}<br>{{item.price}}</p>
+                </div>
+                <div class="img">
+                    <img style="height: 400px" src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.itemId}}.jpg">
+                </div>
+            </div>
+        {% endif %}
+
+        {% if forloop.counter|divisibleby:4 %}
+            </div>
+
+        {% elif forloop.counter == buy_items|length %}
+            </div>
+        {% endif %}
+        {% endfor %}
+
+        {% else %}
+            <h4 style="text-align: center;">No User {{query}}</h4>
+        {% endif %}
+
+    </div>
+
+
+    <div class="recommended-items" style = "max-width: 1080px; margin:auto">
+        <h2 class="section-title">Recommended Items</h2>
+        {% if rec_items %}
+
+        {% for item in rec_items %}
+        {% if forloop.counter0|divisibleby:4 %}
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text">
+                    <h2>{{ forloop.counter }}.</h2>
+                    <p style="min-height: 132px">{{item.name}}<br>{{item.price}}</p>
+                </div>
+                <div class="img">
+                    <img style="height: 400px" src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.itemId}}.jpg">
+                </div>
+            </div>
+
+            {% else %}
+            <div class="col-md-3">
+                <div class="text">
+                    <h2>{{ forloop.counter }}.</h2>
+                    <p style="min-height: 132px">{{item.name}}<br>{{item.price}}</p>
+                </div>
+                <div class="img">
+                    <img style="height: 400px" src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.itemId}}.jpg">
+                </div>
+            </div>
+        {% endif %}
+
+        {% if forloop.counter|divisibleby:4 %}
+            </div>
+
+        {% elif forloop.counter == rec_items|length %}
+            </div>
+        {% endif %}
+        {% endfor %}
+
+        {% else %}
+            <h4 style="text-align: center;">No User {{query}}</h4>
+        {% endif %}
+    </div>
+
+
+{% endblock %}

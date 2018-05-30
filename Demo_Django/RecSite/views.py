@@ -1,79 +1,97 @@
 from django.shortcuts import render, redirect
 from .models import *
+import random, pprint
 
 # url에 따른 함수 정의해놓은 파일
 # 함수를 부를때 클라이언트의 정보 (ip / 시간 등)  => request
 
 # Create your views here.
 def main(request):
-    userId = request.GET.get('q')
+    return render(request, 'RecSite/main.html', {})
 
-    if userId:
-        if len(userId) < 5:
-            int_userId = eval(userId)
-            print(int_userId)
-            userId = "%05d" % int_userId
 
+def show_results(request):
+    ########### Changed! No more getting userId! Just show them all!
+    userIds = list(BuyRecord.objects.values_list('userId', flat=True))
+
+    random.shuffle(userIds)
+
+    userIds = userIds[:50]
+
+    context = {}
+    context['context'] = {}
+
+    for userId in userIds:
         try:
             buy_itemIds = BuyRecord.objects.get(userId=userId)
+            buy_itemIds = str(buy_itemIds).split(",")
+            buy_itemIds = [x for x in buy_itemIds if x != '']
+
+            if len(buy_itemIds) < 3:
+                continue
+            else:
+                buy_itemIds = buy_itemIds[:3]
+
         except:
-            buy_itemIds = BuyRecord.objects.filter(userId=userId).first()
+            continue
+
+        try:
+            topK_itemIds = TopK.objects.get(userId=userId)
+            topK_itemIds = str(topK_itemIds).split(",")
 
 
-        buy_itemIds = str(buy_itemIds).split(",")
-        buy_itemIds = [x for x in buy_itemIds if x != '']
-        print(buy_itemIds)
+        except:
+            continue
 
-        topK_itemIds = TopK.objects.get(userId=userId)
-        topK_itemIds = str(topK_itemIds).split(",")
+        results = []
 
-
-        buy_product = []
+        pur_items = [] # check for item duplication
         for itemId in buy_itemIds:
             p = Item.objects.get(itemId=itemId)
-            buy_product.append({
+            pname = p.name
+
+            if pname in pur_items:
+                continue
+
+            results.append({
                 'itemId': p.itemId[1:],
                 'name': p.name,
                 'price': p.price,
-                'type': p.type, })
+                'type': p.type,
+            })
 
-        rec_product = []
+            pur_items.append(pname)
+
+            if len(results) == 3:
+                break
+
+
+        rec_items = []
         for itemId in topK_itemIds:
             p = Item.objects.get(itemId=itemId)
-            rec_product.append({
+            pname = p.name
+
+            if pname in pur_items or pname in rec_items:
+                continue
+
+            p = Item.objects.get(itemId=itemId)
+
+            results.append({
                 'itemId': p.itemId[1:],
                 'name': p.name,
                 'price': p.price,
                 'type': p.type, })
 
-        context = {'query':userId,
-                   'buy_items': buy_product,
-                   'rec_items': rec_product}
+            rec_items.append(itemId)
 
-        return render(request, 'RecSite/searchList.html', context)
+            if len(results) == 6:
+                break
 
-    else:
-        return render(request,"RecSite/main.html")
+        context['context'][userId] = results
+        context['totalLength'] = len(userIds)
 
-# def accept_list(request):
+    # pprint.pprint(context)
 
-# def receiver(request):
-#     userId = request.GET.get('q')
-#
-#     topK_itemIds = TopK.objects.get(userId=userId)
-#     topK_itemIds = topK_itemIds.split(",")
-#
-#     product = []
-#
-#     for itemId in topK_itemIds:
-#         p = shopDB.objects.get(product_id=itemId)
-#         product.append({
-#             'product_id': p.product_id,
-#             'name': p.clothes,
-#             'price': p.price,
-#             'type': p.type, })
-#         print(p.clothes)
-#
-#     context = {'items':product}
-#
-#     return render(request,'RecSite/main.html', context)
+    return render(request, 'RecSite/searchList.html', context)
+
+

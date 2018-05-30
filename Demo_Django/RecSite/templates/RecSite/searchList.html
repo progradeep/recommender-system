@@ -1,80 +1,99 @@
 {% extends 'base.html' %}
+{% load custom_tags %}
 {% block content %}
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light" style="border-radius: .5rem">
         <div class="col-md-5 p-lg-5 mx-auto my-5">
-            <h1>PrograDeep</h1>
-            <p class="lead font-weight-normal">Search Result For User {{query}}</p>
-            <a class="btn btn-secondary" href="/" role="button">Home</a>
+            <h1>PrograPick</h1>
+            <p class="lead font-weight-normal">Recommended Clothes</p>
+
+            <a class="btn btn-secondary" href="/search" role="button">SHUFFLE</a>
+            <a class="btn btn-secondary white-button" id="back-botton" href="/" role="button">BACK</a>
+
         </div>
     </div>
 
 
-    <div class="buy-record" style = "max-width: 1080px; margin:auto">
-        <h2 class="section-title">Purchased Items</h2>
-        {% for item in buy_items %}
-        {% if forloop.counter0|divisibleby:4 %}
-        <div class="row">
-            <div class="col-md-3">
-                <div class="text">
-                    <h2>{{ forloop.counter }}.</h2>
-                    <p style="min-height: 132px">{{item.name}}<br>{{item.price}}</p>
-                </div>
-                <div class="img">
-                    <img style="height: 400px" src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.itemId}}.jpg">
+    <a class="btn btn-secondary white-button" id="top" href="#content-top" role="button">TOP</a>
+
+    <div class="content" id="content-top" style="max-width: 1400px; margin:auto; margin-bottom: 100px">
+        <!-- Header -->
+        <div class="row header-row" style="width: 100%; text-align: center">
+
+            <div class="col-md-6 header" style="width: 100%">
+                <h2>Purchased</h2>
+            </div>
+            <div class="col-md-6 header" style="width: 100%">
+                <h2>Recommended</h2>
+            </div>
+        </div>
+
+        <!-- Items -->
+        {% for user, item in context.items %}
+        <div class="row" style="width: 100%; text-align: center">
+
+            <div class="col-md-6 content-col-6" style=" padding-left: 35px; padding-right: 35px;" >
+                <div class="purchased">
+                    <div class="row">
+                        <div class="col-md-4 item">
+                            <p class="name">{{ item.0.name }}</p>
+                            <div class="img">
+                                <img src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.0.itemId}}.jpg">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 item">
+                            <p class="name">{{ item.1.name }}</p>
+                            <div class="img">
+                                <img src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.1.itemId}}.jpg">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 item">
+                            <p class="name">{{ item.2.name }}</p>
+                            <div class="img">
+                                <img src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.2.itemId}}.jpg">
+                            </div>
+                        </div>
+
+
+                    </div>
                 </div>
             </div>
 
-            {% else %}
-            <div class="col-md-3">
-                <div class="text">
-                    <h2>{{ forloop.counter }}.</h2>
-                    <p style="min-height: 132px">{{item.name}}<br>{{item.price}}</p>
-                </div>
-                <div class="img">
-                    <img style="height: 400px" src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.itemId}}.jpg">
-                </div>
-            </div>
-        {% endif %}
-        {% if forloop.counter|divisibleby:4 %}
-            </div>
-        {% endif %}
-        {% endfor %}
-    </div>
+            <div class="col-md-6 content-col-6" style=" padding-right: 35px; padding-left: 35px;">
+                <div class="rec">
+                    <div class="row">
+                        <div class="col-md-4 item">
+                            <p class="name">{{ item.3.name }}</p>
+                            <div class="img">
+                                <img src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.3.itemId}}.jpg">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 item">
+                            <p class="name">{{ item.4.name }}</p>
+                            <div class="img">
+                                <img src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.4.itemId}}.jpg">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 item">
+                            <p class="name">{{ item.5.name }}</p>
+                            <div class="img">
+                                <img src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.5.itemId}}.jpg">
+                            </div>
+                        </div>
 
 
-
-    <div class="recommended-items" style = "max-width: 1080px; margin:auto">
-        <h2 class="section-title">Recommended Items</h2>
-        {% for item in rec_items %}
-        {% if forloop.counter0|divisibleby:4 %}
-        <div class="row">
-            <div class="col-md-3">
-                <div class="text">
-                    <h2>{{ forloop.counter }}.</h2>
-                    <p style="min-height: 132px">{{item.name}}<br>{{item.price}}</p>
-                </div>
-                <div class="img">
-                    <img style="height: 400px" src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.itemId}}.jpg">
+                    </div>
                 </div>
             </div>
 
-            {% else %}
-            <div class="col-md-3">
-                <div class="text">
-                    <h2>{{ forloop.counter }}.</h2>
-                    <p style="min-height: 132px">{{item.name}}<br>{{item.price}}</p>
-                </div>
-                <div class="img">
-                    <img style="height: 400px" src = "https://s3-us-west-2.amazonaws.com/recsysbucket/DailyMonday/{{item.itemId}}.jpg">
-                </div>
-            </div>
-        {% endif %}
-        {% if forloop.counter|divisibleby:4 %}
-            </div>
-        {% endif %}
-        {% endfor %}
+        </div>
+    {% endfor %}
 
     </div>
 
 
 {% endblock %}
+
