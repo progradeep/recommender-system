@@ -306,12 +306,12 @@ def get_infer_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100
     all_item_map = set(list(range(num_item)))
     for user_id in user_item_map:
         # all_item_map: {0,1,2, ,,, num_item}
-        if user_id > N:
+        if user_id > N and user_id <= N + 5000:
             neg_item_list = list(all_item_map - user_item_map[user_id])
             infer_length += len(neg_item_list)
             #for neg_item in neg_item_list:
             #    infer_data.append([user_id, neg_item])
-            if user_id % 10000 == 0: print(user_id)	
+            if user_id % 1000 == 0: print(user_id)
         # user_item_neg_map: items_id that users didn't answer
 
     infer_data = np.zeros([infer_length, 2], dtype = np.int32)
@@ -320,13 +320,13 @@ def get_infer_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100
     print('make infer_data')
     for user_id in user_item_map:
         # all_item_map: {0,1,2, ,,, num_item}
-        if user_id > N:
+        if user_id > N and user_id <= N + 5000:
             neg_item_list = list(all_item_map - user_item_map[user_id])
             for neg_item in neg_item_list:
                 infer_data[count, 0] = user_id
                 infer_data[count, 1] = neg_item
                 count += 1
-            if user_id % 10000 == 0: print(user_id)
+            if user_id % 1000 == 0: print(user_id)
         # user_item_neg_map: items_id that users didn't answer
 
     ### numpy to torch
