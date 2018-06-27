@@ -77,7 +77,7 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
             m = item_id_to_num[lines[i][1]]
             lines[i][1] = m
     
-	num_user = len(num_to_user_id)
+    num_user = len(num_to_user_id)
     num_item = len(num_to_item_id)
     print("num_user : {}".format(num_user))
     print("num_item : {}".format(num_item))
@@ -267,7 +267,7 @@ def get_infer_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100
             m = item_id_to_num[lines[i][1]]
             lines[i][1] = m
     
-	num_user = len(num_to_user_id)
+    num_user = len(num_to_user_id)
     num_item = len(num_to_item_id)
     print("num_user : {}".format(num_user))
     print("num_item : {}".format(num_item))
