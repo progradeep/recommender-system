@@ -166,7 +166,7 @@ class Solver(object):
 
             user_item_recommender_table[user.data, item.data] = score.data
 
-            if i % 10000 == 0: print(i)
+            print(i)
 
         _, topk_item_for_user = torch.topk(user_item_recommender_table, k=self.topk)
 
