@@ -1,0 +1,7 @@
+__pycache__/
+.idea/
+.ipynb_checkpoints/
+infer/
+save/
+models/__pychache__/
+data/
