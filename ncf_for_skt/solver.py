@@ -56,15 +56,22 @@ class Solver(object):
             x = x.cuda()
         return Variable(x)
 
-    def cal_hit_ratio_and_ndcg(self, data):
+    def hit_ratio_ndcg_map(self, data, n_pos = 1):
         user = data[:, 0]
-        pos = data[:, 1]
-        neg = data[:, 2:]
-        batch_size = data.size()[0]
-        test_negs = data.size()[1] - 2
+        pos = data[:, 1 : n_pos + 1]
+        neg = data[:, n_pos + 1 : ]
 
-        score = torch.zeros(batch_size, test_negs + 1)
-        score[:, 0] = self.model(user, pos).data
+
+        batch_size = data.size()[0]
+        test_negs = data.size()[1] - (1 + n_pos)
+
+        score = torch.zeros(batch_size, test_negs + n_pos)
+
+        for i in range(n_pos):
+            score[:, i] = self.model(user, pos[:, i]).data
+
+        # score[:, 0 : n_pos] = self.model(user, pos).data
+
         for i in range(test_negs):
             score[:, i + 1] = self.model(user, neg[:, i]).data
         _, index = torch.topk(score, k = self.topk)
@@ -83,6 +90,8 @@ class Solver(object):
         #       Ex) second row, fifth colmun -> [[ 1, 4] , ,,, ]
         # rank.shape: (changeable) (3508,)
 
+        mAP = (1 / (rank + 1)).sum() / batch_size
+
         rank = math.log(2) / torch.log(2 + rank)
         # IDCG: 1/log2(2+0)
         # DCG: 1/log2(2+4)
@@ -92,7 +101,7 @@ class Solver(object):
         # hit ratio: number of nonzero elements out of a batch
         ndcg = rank.sum() / batch_size
 
-        return hit_ratio, ndcg
+        return hit_ratio, ndcg, mAP
 
     def train(self, train_loader, test_loader):
 
@@ -131,10 +140,10 @@ class Solver(object):
                 self.model.eval()
                 for i, data in enumerate(test_loader):
                     data = self.to_variable(data)
-                    hit_ratio, ndcg = self.cal_hit_ratio_and_ndcg(data)
+                    hit_ratio, ndcg, mAP = self.hit_ratio_ndcg_map(data)
                     print()
-                    print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f'
-                          % (epoch + 1, self.num_epochs, hit_ratio, ndcg))
+                    print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f, MAP: %.4f'
+                          % (epoch + 1, self.num_epochs, hit_ratio, ndcg, mAP))
                     print()
 
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
