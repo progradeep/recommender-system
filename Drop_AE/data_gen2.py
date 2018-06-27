@@ -1,7 +1,7 @@
 from tqdm import tqdm
 
 input_path = "../../data/KISA_TBC_VIEWS_UNIQ.csv"
-output_path = "../../data/short.csv"
+output_path = "../../data/short1.csv"
 
 with open(input_path, "r") as file:
     input = file.readlines()
@@ -14,6 +14,8 @@ for i, line in tqdm(enumerate(input)):
         dict[input[i][0]] = [input[i][1]]
     else:
         dict[input[i][0]].append(input[i][1])
+    if input[i][0] == '60000': break
+
     print(input[i])
 
 with open(output_path, "w") as file:
