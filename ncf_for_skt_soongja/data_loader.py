@@ -311,7 +311,7 @@ def get_infer_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100
             infer_length += len(neg_item_list)
             #for neg_item in neg_item_list:
             #    infer_data.append([user_id, neg_item])
-            if user_id % 10 == 0: print(user_id)
+            print(user_id)
         # user_item_neg_map: items_id that users didn't answer
 
     infer_data = np.zeros([infer_length, 2], dtype = np.int32)
@@ -326,7 +326,7 @@ def get_infer_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100
                 infer_data[count, 0] = user_id
                 infer_data[count, 1] = neg_item
                 count += 1
-            if user_id % 10 == 0: print(user_id)
+            print(user_id)
         # user_item_neg_map: items_id that users didn't answer
 
     ### numpy to torch
