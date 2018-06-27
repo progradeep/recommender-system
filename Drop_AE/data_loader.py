@@ -14,7 +14,7 @@ class Dataset(data.Dataset):
         line = line.split(",")[1:]
         movie_vector = np.zeros(self.num_items)
         for i in line:
-            movie_vector[i] = 1
+            movie_vector[int(i)] = 1.0
         movie_vector = torch.Tensor(movie_vector)
         return movie_vector
 
