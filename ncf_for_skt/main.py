@@ -3,7 +3,7 @@ import os
 from solver import Solver
 from torch.backends import cudnn
 from data_loader import get_loader
-
+from data_loader import get_infer_loader
 
 def main(config):
     cudnn.benchmark = True
@@ -13,18 +13,23 @@ def main(config):
     if not os.path.exists(config.infer_path):
         os.makedirs(config.infer_path)
 
-    num_users, num_items, train_loader, test_loader, infer_loader, num_to_user_id, num_to_item_id  \
-        = get_loader(data_path = config.data_path,
-                     train_negs = config.train_negs,
-                     test_negs = config.test_negs,
-                     batch_size = config.batch_size,
-                     num_workers = config.num_workers)
-
-    solver = Solver(config, num_users, num_items)
-
     if config.mode == 'train':
+        num_users, num_items, train_loader, test_loader, infer_loader, num_to_user_id, num_to_item_id  \
+            = get_loader(data_path = config.data_path,
+                        train_negs = config.train_negs,
+                        test_negs = config.test_negs,
+                        batch_size = config.batch_size,
+                        num_workers = config.num_workers)
+        solver = Solver(config, num_users, num_items)
         solver.train(train_loader, test_loader)
     elif config.mode == 'infer':
+        num_users, num_items, infer_loader, num_to_user_id, num_to_item_id  \
+            = get_infer_loader(data_path = config.data_path,
+                        train_negs = config.train_negs,
+                        test_negs = config.test_negs,
+                        batch_size = config.batch_size,
+                        num_workers = config.num_workers)
+        solver = Solver(config, num_users, num_items)
         solver.infer(infer_loader, num_to_user_id, num_to_item_id )
 
 
@@ -51,10 +56,10 @@ if __name__ == '__main__':
     parser.add_argument('--save_path', type = str, default = 'save')
     parser.add_argument('--infer_path', type = str, default = 'infer')
     parser.add_argument('--load_path', type = str, default = None)
-    parser.add_argument('--data_path', type = str, default = 'data/buyCategorical.csv')
+    parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ.csv')
     parser.add_argument('--log_step', type = int, default = 10000)
     parser.add_argument('--test_step', type = int, default = 1)
-    parser.add_argument('--topk', type = int, default = 10)
+    parser.add_argument('--topk', type = int, default = 50)
     parser.add_argument('--use_gpu', type = bool, default = True)
 
     config = parser.parse_args()

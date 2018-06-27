@@ -157,6 +157,8 @@ class Solver(object):
 
             user_item_recommender_table[user.data, item.data] = score.data
 
+            if i % 10000 == 0: print(i)
+
         _, topk_item_for_user = torch.topk(user_item_recommender_table, k=self.topk)
 
         topk_item_for_user_to_id = np.zeros((self.num_users, self.topk + 1))
