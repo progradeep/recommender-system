@@ -123,17 +123,15 @@ class Solver(object):
                     print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f'
                           % (epoch + 1, self.num_epochs, i + 1, total_step, loss))
 
-                    self.mAP(data)
 
-            # if (epoch + 1) % self.test_step == 0:
-            #     self.model.eval()
-            #     for i, data in enumerate(test_loader):
-            #         data = self.to_variable(data)
-            #         hit_ratio, ndcg = self.cal_hit_ratio_and_ndcg(data)
-            #         print()
-            #         print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f'
-            #               % (epoch + 1, self.num_epochs, hit_ratio, ndcg))
-            #         print()
+            if (epoch + 1) % self.test_step == 0:
+                self.model.eval()
+                for i, data in enumerate(test_loader):
+                    data = self.to_variable(data)
+
+                    self.mAP(data)
+                    print()
+
 
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
             torch.save(self.model, model_path)
