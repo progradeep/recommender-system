@@ -51,22 +51,22 @@ class Solver(object):
 
     def to_variable(self, x):
         if torch.cuda.is_available() and self.use_gpu:
-            x = x.cuda()
+           x = x.cuda()
         return Variable(x)
 
 
     def mAP(self, test_data):
         batch_size = test_data.size()[0]
-        print(test_data)
-
+        print("bs")
         score = self.model(test_data).data
-
+        print("score")
         _, index = torch.topk(score, k = self.topk)
         # index: indices of largest k elements in score
 
         test_in_top_k = ( test_data[index].float() == 1.0 )
 
-        print(test_in_top_k)
+        print(test_in_top_k.shape)
+        print(test_in_top_k[:10])
 
 
 
@@ -97,14 +97,15 @@ class Solver(object):
 
         print("Start Train!!")
         print()
-        total_step = len(train_loader)
-        for epoch in range(self.num_epochs):
+
+		total_step = len(train_loader)
+        
+		for epoch in range(self.num_epochs):
             for i, data in enumerate(train_loader):
 
                 self.model.train()
 
                 data = self.to_variable(data)
-
                 outputs = self.model(data)
 
                 loss = F.mse_loss(outputs, data.data)
@@ -128,7 +129,7 @@ class Solver(object):
                 self.model.eval()
                 for i, data in enumerate(test_loader):
                     data = self.to_variable(data)
-
+                    print(data.size())
                     self.mAP(data)
                     print()
 

@@ -11,7 +11,6 @@ class Dataset(data.Dataset):
 
     def __getitem__(self, index):
         line = self.lines[index]
-        print(line)
         line = line.split(",")[1:]
         movie_vector = np.zeros(self.num_items)
         for i in line:
@@ -31,9 +30,9 @@ def get_loader(data_path, batch_size = 10000, num_workers = 2):
     valid_lines = lines[300000:393186]
     test_lines = lines[393186:]
 
-    train_data = Dataset(train_lines,8926)
-    valid_data = Dataset(valid_lines,8926)
-    test_data = Dataset(test_lines,8926)
+    train_data = Dataset(train_lines,8259)
+    valid_data = Dataset(valid_lines,8259)
+    test_data = Dataset(test_lines,8259)
 
     train_loader = data.DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     valid_loader = data.DataLoader(valid_data, batch_size=batch_size, shuffle=False, num_workers=num_workers)

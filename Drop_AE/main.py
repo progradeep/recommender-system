@@ -46,7 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('--infer_path', type = str, default = 'infer')
     parser.add_argument('--load_path', type = str, default = None)
     parser.add_argument('--data_path', type = str, default = '../../data/ae_total.csv')
-    parser.add_argument('--log_step', type = int, default = 10000)
+    parser.add_argument('--log_step', type = int, default = 1)
     parser.add_argument('--test_step', type = int, default = 1)
     parser.add_argument('--topk', type = int, default = 10)
     parser.add_argument('--use_gpu', type = bool, default = True)

@@ -7,18 +7,24 @@ class Drop_AE(nn.Module):
         super(Drop_AE, self).__init__()
         self.num_items = num_items
         self.latent_dim = latent_dim
-        self.linear1 = nn.Linear(num_items, latent_dim)
-        self.linear2 = nn.Linear(latent_dim, num_items)
+        #self.linear1 = nn.Linear(num_items, latent_dim)
+        #self.linear2 = nn.Linear(latent_dim, num_items)
+        
+        self.linear = nn.Sequential(
+		    nn.Linear(num_items, latent_dim),
+			nn.ReLU(),
+			nn.Linear(latent_dim, num_items),
+			nn.Sigmoid(),)
 
         self.dropout = nn.Dropout(p = drop_rate)
 
     def forward(self, x):
         x = self.dropout(x)
+        x = self.linear(x)
+        #x = self.linear1(x)
+        #x = nn.ReLU(x)
 
-        x = self.linear1(x)
-        x = nn.ReLU(x)
-
-        x = self.linear2(x)
-        x = nn.Sigmoid(x)
+        #x = self.linear2(x)
+        #x = nn.Sigmoid(x)
 
         return x
