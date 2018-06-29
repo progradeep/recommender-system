@@ -1,6 +1,7 @@
 import math
 import os
 import numpy as np
+from tensorboardX import SummaryWriter
 
 import torch
 from torch import optim
@@ -35,6 +36,8 @@ class Solver(object):
         self.use_gpu = config.use_gpu
         self.build_model()
 
+        self.writer = SummaryWriter()
+
     def build_model(self):
         if self.load_path == None:
             self.model = Drop_AE(8259, self.latent_dim, 0.8)
@@ -55,54 +58,18 @@ class Solver(object):
         return Variable(x)
 
 
-    def mAP(self, test_data):
-        batch_size = test_data.size()[0]
-        print("bs")
-        score = self.model(test_data).data
-        print("score")
-        _, index = torch.topk(score, k = self.topk)
-        # index: indices of largest k elements in score
-
-        test_in_top_k = ( test_data[index].float() == 1.0 )
-
-        print(test_in_top_k.shape)
-        print(test_in_top_k[:10])
-
-
-
-    # def cal_hit_ratio_and_ndcg(self, data):
-    #     user = data[:, 0]
-    #     pos = data[:, 1]
-    #     neg = data[:, 2:]
-    #     batch_size = data.size()[0]
-    #     test_negs = data.size()[1] - 2
-    #
-    #     score = torch.zeros(batch_size, test_negs + 1)
-    #     score[:, 0] = self.model(user, pos).data
-    #     for i in range(test_negs):
-    #         score[:, i + 1] = self.model(user, neg[:, i]).data
-    #     _, index = torch.topk(score, k = self.topk)
-    #
-    #     zero = torch.zeros(index.size())
-    #     test_in_top_k = (index.float() == zero.float())
-    #     rank = torch.nonzero(test_in_top_k)[:, -1].float()
-    #     rank = math.log(2) / torch.log(2 + rank)
-    #
-    #     hit_ratio = len(rank) / batch_size
-    #     ndcg = rank.sum() / batch_size
-    #
-    #     return hit_ratio, ndcg
 
     def train(self, train_loader, test_loader):
 
         print("Start Train!!")
         print()
 
-		total_step = len(train_loader)
-        
-		for epoch in range(self.num_epochs):
-            for i, data in enumerate(train_loader):
+        total_step = len(train_loader)
 
+        step = 0
+        for epoch in range(self.num_epochs):
+            for i, data in enumerate(train_loader):
+                step += 1
                 self.model.train()
 
                 data = self.to_variable(data)
@@ -121,17 +88,18 @@ class Solver(object):
                 self.optimizer.step()
 
                 if (i + 1) % self.log_step == 0:
+                    self.writer.add_scalar('loss',loss,step)
                     print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f'
                           % (epoch + 1, self.num_epochs, i + 1, total_step, loss))
 
 
-            if (epoch + 1) % self.test_step == 0:
-                self.model.eval()
-                for i, data in enumerate(test_loader):
-                    data = self.to_variable(data)
-                    print(data.size())
-                    self.mAP(data)
-                    print()
+            # if (epoch + 1) % self.test_step == 0:
+            #     self.model.eval()
+            #     for i, data in enumerate(test_loader):
+            #         data = self.to_variable(data)
+            #         print(data.size())
+            #         self.mAP(data)
+            #         print()
 
 
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
