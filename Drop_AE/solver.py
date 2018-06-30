@@ -11,6 +11,8 @@ from torch.autograd import Variable
 
 from models.model import Drop_AE
 
+import pandas as pd
+
 
 class Solver(object):
     def __init__(self, config):
@@ -45,7 +47,6 @@ class Solver(object):
         else:
             self.model = torch.load(self.load_path)
 
-
         self.optimizer = optim.Adam(self.model.parameters(),
                                     self.lr, [self.beta1, self.beta2])
 
@@ -54,12 +55,78 @@ class Solver(object):
 
     def to_variable(self, x):
         if torch.cuda.is_available() and self.use_gpu:
-           x = x.cuda()
+            x = x.cuda()
         return Variable(x)
 
+    def to_variable(self, x):
+        if torch.cuda.is_available() and self.use_gpu:
+            x = x.cuda()
+        return Variable(x)
 
+    def apk(self, actual, predicted, k=50):
+        """
+        Computes the average precision at k.
+        This function computes the average prescision at k between two lists of
+        items.
+        Parameters
+        ----------
+        actual : list
+                 A list of elements that are to be predicted (order doesn't matter)
+        predicted : list
+                    A list of predicted elements (order does matter)
+        k : int, optional
+            The maximum number of predicted elements
+        Returns
+        -------
+        score : double
+                The average precision at k over the input lists
+        """
+        if len(predicted) > k:
+            predicted = predicted[:k]
 
-    def train(self, train_loader, test_loader):
+        score = 0.0
+        num_hits = 0.0
+
+        for i, p in enumerate(predicted):
+            if p in actual and p not in predicted[:i]:
+                num_hits += 1.0
+                score += num_hits / (i + 1.0)
+
+        if not actual:
+            return 0.0
+
+        return score / min(len(actual), k)
+
+    def mapk(self, actual, predicted, k=50):
+        """
+        Computes the mean average precision at k.
+        This function computes the mean average prescision at k between two lists
+        of lists of items.
+        Parameters
+        ----------
+        actual : list
+                 A list of lists of elements that are to be predicted
+                 (order doesn't matter in the lists)
+        predicted : list
+                    A list of lists of predicted elements
+                    (order matters in the lists)
+        k : int, optional
+            The maximum number of predicted elements
+        Returns
+        -------
+        score : double
+                The mean average precision at k over the input lists
+        """
+        return np.mean([self.apk(a, p, k) for a, p in zip(actual, predicted)])
+
+    def calculate_map(self, actual, predicted, k=50):
+        actual = np.nonzero(actual)
+        _, predicted = np.topk(predicted)
+        mAP = self.mapk(actual, predicted, k)
+
+        return mAP
+
+    def train(self, train_loader, valid_loader):
 
         print("Start Train!!")
         print()
@@ -88,23 +155,48 @@ class Solver(object):
                 self.optimizer.step()
 
                 if (i + 1) % self.log_step == 0:
-                    self.writer.add_scalar('loss',loss,step)
-                    print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f'
-                          % (epoch + 1, self.num_epochs, i + 1, total_step, loss))
+                    self.writer.add_scalar('loss', loss, step)
+                    print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f, MAP: %.4f'
+                          % (epoch + 1, self.num_epochs, i + 1, total_step, loss,
+                             self.calculate_map(data, outputs, self.topk)))
 
+            if (epoch + 1) % self.test_step == 0:
+                self.model.eval()
+                for i, data in enumerate(valid_loader):
+                    data = self.to_variable(data)
+                    outputs = self.model(data)
 
-            # if (epoch + 1) % self.test_step == 0:
-            #     self.model.eval()
-            #     for i, data in enumerate(test_loader):
-            #         data = self.to_variable(data)
-            #         print(data.size())
-            #         self.mAP(data)
-            #         print()
-
-
+                    print('Epoch [%d/%d], MAP: %.4f' % (epoch + 1, self.num_epochs,
+                                                        self.calculate_map(data, outputs, self.topk)))
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
             torch.save(self.model, model_path)
 
+    def test(self, test_loader):
+        print("Start Test!!")
+        print()
+
+        total_step = len(test_loader)
+
+        step = 0
+        for i, data in enumerate(test_loader):
+            step += 1
+            self.model.eval()
+
+            data = self.to_variable(data)
+            outputs = self.model(data, drop = False)
+
+            _, outputs = torch.topk(outputs, self.topk)
+
+            outputs = pd.DataFrame(outputs)
+
+            if step == 1:
+                outputs.to_csv(self.output_path, index = False)
+            else:
+                prev_output = pd.read_csv(self.output_path)
+                prev_output.append(outputs)
+                prev_output.to_csv(self.output_path, index = False)
+            
+        print("Save file in {}".format(self.output_path))
     # def infer(self, infer_loader):
     #
     #     print("Start Inference!!")

@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type = str, default = 'train')  # train or infer
     parser.add_argument('--num_workers', type = int, default = 2)
     parser.add_argument('--save_path', type = str, default = 'save')
-    parser.add_argument('--infer_path', type = str, default = 'infer')
+    parser.add_argument('--output_path', type = str, default = 'out.csv')
     parser.add_argument('--load_path', type = str, default = None)
     parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ.csv')
     parser.add_argument('--log_step', type = int, default = 10000)
