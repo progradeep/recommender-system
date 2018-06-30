@@ -164,9 +164,10 @@ class Solver(object):
             if (epoch + 1) % self.test_step == 0:
                 self.model.eval()
                 for i, data in enumerate(valid_loader):
+                    if i == 1: break
                     data = self.to_variable(data)
                     outputs = self.model(data)
-f i == 1: break
+                
                     print('Epoch [%d/%d], MAP: %.4f' % (epoch + 1, self.num_epochs,
                                                         self.calculate_map(data, outputs, self.topk)))
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
