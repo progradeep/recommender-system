@@ -1,7 +1,6 @@
 import math
 import os
 import numpy as np
-from tensorboardX import SummaryWriter
 
 import torch
 from torch import optim
@@ -38,7 +37,6 @@ class Solver(object):
         self.use_gpu = config.use_gpu
         self.build_model()
 
-        self.writer = SummaryWriter()
 
     def build_model(self):
         if self.load_path == None:
@@ -58,10 +56,6 @@ class Solver(object):
             x = x.cuda()
         return Variable(x)
 
-    def to_variable(self, x):
-        if torch.cuda.is_available() and self.use_gpu:
-            x = x.cuda()
-        return Variable(x)
 
     def apk(self, actual, predicted, k=50):
         """
@@ -157,7 +151,6 @@ class Solver(object):
                 self.optimizer.step()
 
                 if (i + 1) % self.log_step == 0:
-                    self.writer.add_scalar('loss', loss, step)
                     print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f'
                           % (epoch + 1, self.num_epochs, i + 1, total_step, loss))
 
@@ -170,6 +163,7 @@ class Solver(object):
                 
                     print('Epoch [%d/%d], MAP: %.4f' % (epoch + 1, self.num_epochs,
                                                         self.calculate_map(data, outputs, self.topk)))
+
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
             torch.save(self.model, model_path)
 

@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type = str, default = 'gmf')
 
     # training hyper-parameters
-    parser.add_argument('--latent_dim', type = int, default = 30)
+    parser.add_argument('--latent_dim', type = int, default = 128)
     parser.add_argument('--lr', type = float, default = 0.01)
     parser.add_argument('--reg', type = float, default = 0)
     parser.add_argument('--num_epochs', type = int, default = 100)
