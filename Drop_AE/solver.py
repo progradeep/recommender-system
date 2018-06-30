@@ -119,8 +119,9 @@ class Solver(object):
         """
         return np.mean([self.apk(a, p, k) for a, p in zip(actual, predicted)])
 
-    def calculate_map(self, actual, predicted, k=50):
+    def calculate_map(self, actual, drop_data, predicted, k=50):
         actual = np.nonzero(actual)
+        predicted = predicted * (1-drop_data)
         _, predicted = np.topk(predicted)
         mAP = self.mapk(actual, predicted, k)
 
@@ -140,7 +141,8 @@ class Solver(object):
                 self.model.train()
 
                 data = self.to_variable(data)
-                outputs = self.model(data)
+                drop_data = self.model.dropout(data)
+                outputs = self.model(drop_data)
 
                 loss = F.mse_loss(outputs, data.data)
 
@@ -158,7 +160,7 @@ class Solver(object):
                     self.writer.add_scalar('loss', loss, step)
                     print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f, MAP: %.4f'
                           % (epoch + 1, self.num_epochs, i + 1, total_step, loss,
-                             self.calculate_map(data, outputs, self.topk)))
+                             self.calculate_map(data, drop_data, outputs, self.topk)))
 
             if (epoch + 1) % self.test_step == 0:
                 self.model.eval()
@@ -175,15 +177,14 @@ class Solver(object):
         print("Start Test!!")
         print()
 
-        total_step = len(test_loader)
-
         step = 0
         for i, data in enumerate(test_loader):
             step += 1
             self.model.eval()
 
             data = self.to_variable(data)
-            outputs = self.model(data, drop = False)
+            outputs = self.model(data)
+            outputs = outputs * (1-data)
 
             _, outputs = torch.topk(outputs, self.topk)
 

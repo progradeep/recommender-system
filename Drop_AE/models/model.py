@@ -18,9 +18,7 @@ class Drop_AE(nn.Module):
 
         self.dropout = nn.Dropout(p = drop_rate)
 
-    def forward(self, x, drop = True):
-        if drop==True:
-            x = self.dropout(x)
+    def forward(self, x):
         x = self.linear(x)
         #x = self.linear1(x)
         #x = nn.ReLU(x)
