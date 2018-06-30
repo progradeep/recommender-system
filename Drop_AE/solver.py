@@ -92,8 +92,8 @@ class Solver(object):
                 num_hits += 1.0
                 score += num_hits / (i + 1.0)
 
-        if not actual:
-            return 0.0
+        #if not actual:
+        #    return 0.0
 
         return score / min(len(actual), k)
 
@@ -122,7 +122,7 @@ class Solver(object):
     def calculate_map(self, actual, drop_data, predicted, k=50):
         actual = np.nonzero(actual)
         predicted = predicted * (1-drop_data)
-        _, predicted = np.topk(predicted)
+        _, predicted = torch.topk(predicted, k)
         mAP = self.mapk(actual, predicted, k)
 
         return mAP
@@ -158,16 +158,15 @@ class Solver(object):
 
                 if (i + 1) % self.log_step == 0:
                     self.writer.add_scalar('loss', loss, step)
-                    print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f, MAP: %.4f'
-                          % (epoch + 1, self.num_epochs, i + 1, total_step, loss,
-                             self.calculate_map(data, drop_data, outputs, self.topk)))
+                    print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f'
+                          % (epoch + 1, self.num_epochs, i + 1, total_step, loss))
 
             if (epoch + 1) % self.test_step == 0:
                 self.model.eval()
                 for i, data in enumerate(valid_loader):
                     data = self.to_variable(data)
                     outputs = self.model(data)
-
+f i == 1: break
                     print('Epoch [%d/%d], MAP: %.4f' % (epoch + 1, self.num_epochs,
                                                         self.calculate_map(data, outputs, self.topk)))
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))

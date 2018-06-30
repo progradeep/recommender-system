@@ -26,8 +26,8 @@ def get_loader(data_path, batch_size = 10000, num_workers = 2):
     with open(data_path, 'r') as f:
         lines = f.readlines()
 
-    train_lines = lines[:300000]
-    valid_lines = lines[300000:393186]
+    train_lines = lines[:350000]
+    valid_lines = lines[350000:393186]
     test_lines = lines[393186:]
 
     train_data = Dataset(train_lines,8259)
