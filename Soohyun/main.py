@@ -55,7 +55,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_path', type = str, default = 'out.csv')
     parser.add_argument('--load_path', type = str, default = None)
     # parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ.csv')
-    parser.add_argument('--data_path', type = str, default = 'C:\\Users\msi\Desktop\Soohyun\CHALLENGERS\DATASET\MovieLens\\ratings.csv')
+    parser.add_argument('--data_path', type = str, default = '../../data/npy/')
     parser.add_argument('--log_step', type = int, default = 10)
     parser.add_argument('--test_step', type = int, default = 1)
     parser.add_argument('--topk', type = int, default = 50)

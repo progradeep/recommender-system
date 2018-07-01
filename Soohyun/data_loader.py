@@ -39,7 +39,7 @@ class User_Item_Dataset(data.Dataset):
 
 
 def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_workers = 2):
-    if not os.path.exists("./data/npy/"):
+    if not os.path.exists(data_path) or not os.path.exists(data_path+'num.npy') or not data_path:
         os.makedirs("./data/npy/")
         ########################################
         ### load file
@@ -218,16 +218,15 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
         np.save("./data/npy/test.npy", test_data)
         print("saved test data")
 
-
         np.save("./data/npy/num.npy", np.array([num_user, num_item]))
 
     else:
-        train_data = np.load("./data/npy/train.npy")
+        train_data = np.load(data_path+"train.npy")
         print("loaded train data")
-        test_data = np.load("./data/npy/test.npy")
+        test_data = np.load(data_path+"test.npy")
         print("loaded test data")
 
-        num_user, num_item = np.load("./data/npy/num.npy")
+        num_user, num_item = np.load(data_path+"num.npy")
 
 
 
