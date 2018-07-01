@@ -10,9 +10,9 @@ def main(config):
 
     if not os.path.exists(config.save_path):
         os.makedirs(config.save_path)
-    
+
     if config.mode == 'train':
-        num_users, num_items, train_loader, test_loader, infer_loader  \
+        num_users, num_items, train_loader, test_loader  \
             = get_loader(data_path = config.data_path,
                         train_negs = config.train_negs,
                         test_negs = config.test_negs,
@@ -54,8 +54,9 @@ if __name__ == '__main__':
     parser.add_argument('--save_path', type = str, default = 'save')
     parser.add_argument('--output_path', type = str, default = 'out.csv')
     parser.add_argument('--load_path', type = str, default = None)
-    parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ.csv')
-    parser.add_argument('--log_step', type = int, default = 10000)
+    # parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ.csv')
+    parser.add_argument('--data_path', type = str, default = 'C:\\Users\msi\Desktop\Soohyun\CHALLENGERS\DATASET\MovieLens\\ratings.csv')
+    parser.add_argument('--log_step', type = int, default = 10)
     parser.add_argument('--test_step', type = int, default = 1)
     parser.add_argument('--topk', type = int, default = 50)
     parser.add_argument('--use_gpu', type = bool, default = True)

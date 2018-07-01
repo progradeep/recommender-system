@@ -26,7 +26,6 @@ class Solver(object):
 
         self.num_workers = config.num_workers
         self.save_path = config.save_path
-        self.infer_path = config.infer_path
         self.load_path = config.load_path
         self.data_path = config.data_path
         self.log_step = config.log_step
@@ -62,8 +61,8 @@ class Solver(object):
         neg = data[:, n_pos + 1 : ]
 
 
-        batch_size = data.size()[0]
-        test_negs = data.size()[1] - (1 + n_pos)
+        batch_size = data.shape[0]
+        test_negs = data.shape[1] - (1 + n_pos)
 
         score = torch.zeros(batch_size, test_negs + n_pos)
 
@@ -139,7 +138,9 @@ class Solver(object):
             if (epoch + 1) % self.test_step == 0:
                 self.model.eval()
                 for i, data in enumerate(test_loader):
+                    if i == 1: break
                     data = self.to_variable(data)
+
                     hit_ratio, ndcg, mAP = self.hit_ratio_ndcg_map(data)
                     print()
                     print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f, MAP: %.4f'
@@ -179,7 +180,7 @@ class Solver(object):
                 else:
                     topk_item_for_user_to_id[user_num][i] = num_to_item_id[topk_item_num[i - 1]]
 
-        np.save(self.infer_path + "/topk_item_for_user_to_id.npy", topk_item_for_user_to_id)
+        np.save(self.save_path + "/topk_item_for_user_to_id.npy", topk_item_for_user_to_id)
 
-        print("Save file in {}".format(self.infer_path))
+        print("Save file in {}".format(self.save_path))
         print()

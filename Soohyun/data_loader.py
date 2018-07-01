@@ -39,8 +39,8 @@ class User_Item_Dataset(data.Dataset):
 
 
 def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_workers = 2):
-    if not os.path.exists("../../data/npy/"):
-        os.makedirs("../../data/npy/")
+    if not os.path.exists("./data/npy/"):
+        os.makedirs("./data/npy/")
         ########################################
         ### load file
         # each line contains (user_id, item_id, rating, timestamp)
@@ -127,20 +127,20 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
                 if user_id % 10000 == 0: print(user_id)
             # user_item_neg_map: items_id that users didn't answer
 
-        infer_data = np.zeros([infer_length, 2], dtype=np.int32)
-
-        count = 0
-        print('make infer_data')
-        for user_id in user_item_map:
-            # all_item_map: {0,1,2, ,,, num_item}
-            if user_id > N:
-                neg_item_list = list(all_item_map - user_item_map[user_id])
-                for neg_item in neg_item_list:
-                    infer_data[count, 0] = user_id
-                    infer_data[count, 1] = neg_item
-                    count += 1
-                if user_id % 10000 == 0: print(user_id)
-            # user_item_neg_map: items_id that users didn't answer
+        # infer_data = np.zeros([infer_length, 2], dtype=np.int32)
+        #
+        # count = 0
+        # print('make infer_data')
+        # for user_id in user_item_map:
+        #     # all_item_map: {0,1,2, ,,, num_item}
+        #     if user_id > N:
+        #         neg_item_list = list(all_item_map - user_item_map[user_id])
+        #         for neg_item in neg_item_list:
+        #             infer_data[count, 0] = user_id
+        #             infer_data[count, 1] = neg_item
+        #             count += 1
+        #         if user_id % 10000 == 0: print(user_id)
+        #     # user_item_neg_map: items_id that users didn't answer
 
         ########################################
         ### convert numpy array
@@ -207,48 +207,42 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
         train_data[:, 2] = train_data[:, 2] * 1.0 / max_rating
 
         ### numpy to torch
-        train_data, test_data, infer_data = \
-            torch.LongTensor(train_data), torch.LongTensor(test_data), torch.LongTensor(infer_data)
+        train_data, test_data = \
+            torch.LongTensor(train_data), torch.LongTensor(test_data)
 
         # save to hd5f file
 
-        np.save("../../data/npy/train.npy", train_data)
+        np.save("./data/npy/train.npy", train_data)
         print("saved train data")
 
-        np.save("../../data/npy/test.npy", test_data)
+        np.save("./data/npy/test.npy", test_data)
         print("saved test data")
 
-        np.save("../../data/npy/infer.npy", infer_data)
-        print("saved infer data")
 
-        np.save("../../data/npy/num.npy", np.array([num_user, num_item]))
+        np.save("./data/npy/num.npy", np.array([num_user, num_item]))
 
     else:
-        train_data = np.load("../../data/npy/train.npy")
+        train_data = np.load("./data/npy/train.npy")
         print("loaded train data")
-        test_data = np.load("../../data/npy/test.npy")
+        test_data = np.load("./data/npy/test.npy")
         print("loaded test data")
-        infer_data = np.load("../../data/npy/infer.npy")
-        print("loaded infer data")
 
-        num_user, num_item = np.load("../../data/npy/num.npy")
+        num_user, num_item = np.load("./data/npy/num.npy")
 
 
 
     ### get loader
     train_data = User_Item_Dataset(train_data)
     test_data = User_Item_Dataset(test_data)
-    infer_data = User_Item_Dataset(infer_data)
 
     train_loader = data.DataLoader(train_data, batch_size = batch_size, shuffle = True, num_workers = num_workers)
-    test_loader = data.DataLoader(test_data, batch_size = num_user, shuffle = True, num_workers = num_workers)
-    infer_loader = data.DataLoader(infer_data, batch_size = batch_size, shuffle = False, num_workers = num_workers)
+    test_loader = data.DataLoader(test_data, batch_size = batch_size, shuffle = True, num_workers = num_workers)
 
     print()
     print("Complete Data Processing!!")
     print()
 
-    return num_user, num_item, train_loader, test_loader, infer_loader
+    return int(num_user), int(num_item), train_loader, test_loader
 
 
 def get_infer_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_workers = 2):
