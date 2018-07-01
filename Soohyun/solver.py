@@ -89,6 +89,8 @@ class Solver(object):
         #       Ex) second row, fifth colmun -> [[ 1, 4] , ,,, ]
         # rank.shape: (changeable) (3508,)
 
+        recip_rank = 1/(rank+1)
+
         mAP = (1 / (rank + 1)).sum() / batch_size
 
         rank = math.log(2) / torch.log(2 + rank)
@@ -137,15 +139,21 @@ class Solver(object):
 
             if (epoch + 1) % self.test_step == 0:
                 self.model.eval()
-                for i, data in enumerate(test_loader):
-                    if i == 1: break
-                    data = self.to_variable(data)
+                mAP2 = 0
+                hit_ratio2 = 0
+                ndcg2 = 0
 
+                for i, data in enumerate(test_loader):
+                    data = self.to_variable(data)
                     hit_ratio, ndcg, mAP = self.hit_ratio_ndcg_map(data)
-                    print()
-                    print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f, MAP: %.4f'
-                          % (epoch + 1, self.num_epochs, hit_ratio, ndcg, mAP))
-                    print()
+                    mAP2 += mAP
+                    hit_ratio2 += hit_ratio
+                    ndcg2 += ndcg
+
+                print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f, MAP: %.4f'
+                          % (epoch + 1, self.num_epochs, hit_ratio2/(i+1),
+                             ndcg2/(i+1), mAP2/(i+1)))
+                print()
 
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
             torch.save(self.model, model_path)
