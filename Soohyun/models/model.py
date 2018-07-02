@@ -19,10 +19,14 @@ class GMF(nn.Module):
         self.logistic = nn.Sigmoid()
         self.mseloss = nn.MSELoss()
 
-    def forward(self, user_indices, item_indices, b, g, d):
+    def forward(self, user_indices, item_indices, b, g, d, item_pref_zero):
         user_embedding = self.embedding_user(user_indices)
 
-        item_pref = self.embedding_item(item_indices)
+        if item_pref_zero == 1:
+            item_pref = self.embedding_item(item_indices)
+        else:
+            item_pref = item_pref_zero
+
         g_embedding = self.embedding_genre(g.float())
         d_embedding = self.embedding_dir(d.float())
         b = b.view(-1, 1)

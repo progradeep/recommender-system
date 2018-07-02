@@ -123,7 +123,11 @@ class Solver(object):
                 item_id = data[:, 1]
                 ratings = data[:, 2].float()
 
-                outputs = self.model(user_id, item_id, box, genre, director)
+                item_pref = 1
+                if (i + 1) % 2 == 0:
+                    item_pref = torch.zeros_like(self.batch_size, 10)
+
+                outputs = self.model(user_id, item_id, box, genre, director, item_pref)
                 loss = self.model.mseloss(outputs, ratings)
 
                 param_sum = 0
