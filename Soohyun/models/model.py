@@ -25,6 +25,7 @@ class GMF(nn.Module):
         item_pref = self.embedding_item(item_indices)
         g_embedding = self.embedding_genre(g.float())
         d_embedding = self.embedding_dir(d.float())
+        print(item_pref.shape, g_embedding.shape, d_embedding.shape, b.shape)
         item_embedding = torch.cat((item_pref,b.float(),g_embedding,d_embedding),dim=1)
 
         print("U",user_embedding.shape)
