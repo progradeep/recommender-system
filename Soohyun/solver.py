@@ -85,10 +85,13 @@ class Solver(object):
         # test_in_top_k: 1 at index == 0, 0 at others
         # test_in_top_k.shape: (max_user_id, self.topk)
 
+        print(test_in_top_k.shape)
+
         rank = torch.nonzero(test_in_top_k)[:, -1].float()
         # rank: indices of nonzero elements in test_in_top_k
         #       Ex) second row, fifth colmun -> [[ 1, 4] , ,,, ]
         # rank.shape: (changeable) (3508,)
+        print(rank.size())
 
 
         mAP = (1 / (rank + 1)).sum() / batch_size
@@ -146,27 +149,27 @@ class Solver(object):
                     print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f'
                           % (epoch + 1, self.num_epochs, i + 1, total_step, loss))
 
-            if (epoch+1) % self.test_step == 0:
-                self.model.eval()
-                mAP2 = 0
-                hit_ratio2 = 0
-                ndcg2 = 0
+                if (i+1) % self.test_step == 0:
+                    self.model.eval()
+                    mAP2 = 0
+                    hit_ratio2 = 0
+                    ndcg2 = 0
 
-                for i, (data,box,genre,director) in enumerate(test_loader):
-                    data = self.to_variable(data)
-                    box = self.to_variable(box)
-                    genre = self.to_variable(genre)
-                    director = self.to_variable(director)
+                    for i, (data,box,genre,director) in enumerate(test_loader):
+                        data = self.to_variable(data)
+                        box = self.to_variable(box)
+                        genre = self.to_variable(genre)
+                        director = self.to_variable(director)
 
-                    hit_ratio, ndcg, mAP = self.hit_ratio_ndcg_map(data, box, genre, director)
-                    mAP2 += mAP
-                    hit_ratio2 += hit_ratio
-                    ndcg2 += ndcg
+                        hit_ratio, ndcg, mAP = self.hit_ratio_ndcg_map(data, box, genre, director)
+                        mAP2 += mAP
+                        hit_ratio2 += hit_ratio
+                        ndcg2 += ndcg
 
-                print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f, MAP: %.4f'
-                          % (epoch + 1, self.num_epochs, hit_ratio2/(i+1),
-                             ndcg2/(i+1), mAP2/(i+1)))
-                print()
+                    print('Epoch [%d/%d], Hit_Ratio: %.4f, NDCG: %.4f, MAP: %.4f'
+                              % (epoch + 1, self.num_epochs, hit_ratio2/(i+1),
+                                 ndcg2/(i+1), mAP2/(i+1)))
+                    print()
 
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
             torch.save(self.model, model_path)
