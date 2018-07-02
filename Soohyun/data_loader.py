@@ -209,7 +209,7 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
         np.save("../../data/npy/num.npy", np.array([num_user, num_item]))
 
     else:
-        train_data = np.load(data_path+"/train.npy")[:14000]
+        train_data = np.load(data_path+"/train.npy")
         print("loaded train data")
         test_data = np.load(data_path+"/test.npy")
         print("loaded test data")
