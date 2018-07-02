@@ -126,6 +126,7 @@ class Solver(object):
                 item_pref = 1
                 if (i + 1) % 2 == 0:
                     item_pref = torch.zeros(self.batch_size, 10)
+                    item_pref = self.to_variable(item_pref)
 
                 outputs = self.model(user_id, item_id, box, genre, director, item_pref)
                 loss = self.model.mseloss(outputs, ratings)
