@@ -22,7 +22,7 @@ class GMF(nn.Module):
     def forward(self, user_indices, item_indices, b, g, d, item_pref_zero):
         user_embedding = self.embedding_user(user_indices)
 
-        if item_pref_zero == 1:
+        if type(item_pref_zero) == int:
             item_pref = self.embedding_item(item_indices)
         else:
             item_pref = item_pref_zero
