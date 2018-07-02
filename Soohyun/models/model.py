@@ -11,8 +11,10 @@ class GMF(nn.Module):
 
         self.embedding_user = nn.Embedding(num_embeddings = self.num_users, embedding_dim = self.latent_dim)
         self.embedding_item = nn.Embedding(num_embeddings = self.num_items, embedding_dim = 10)
-        self.embedding_genre = nn.Embedding(num_embeddings=21, embedding_dim=9)
-        self.embedding_dir = nn.Embedding(num_embeddings=3026, embedding_dim=10)
+
+        self.embedding_genre = nn.Linear(21, 9)
+        self.embedding_dir = nn.Linear(3026, 10)
+
         self.affine_output = nn.Linear(in_features = self.latent_dim, out_features = 1)
         self.logistic = nn.Sigmoid()
         self.mseloss = nn.MSELoss()
