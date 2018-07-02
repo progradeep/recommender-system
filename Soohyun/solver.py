@@ -56,7 +56,7 @@ class Solver(object):
             x = x.cuda()
         return Variable(x)
 
-    def hit_ratio_ndcg_map(self, data, n_pos = 1):
+    def hit_ratio_ndcg_map(self, data, b, g, d, n_pos = 1):
         user = data[:, 0]
         pos = data[:, 1 : n_pos + 1]
         neg = data[:, n_pos + 1 : ]
@@ -68,7 +68,7 @@ class Solver(object):
         score = torch.zeros(batch_size, test_negs + n_pos)
 
         for i in range(n_pos):
-            score[:, i] = self.model(user, pos[:, i]).data
+            score[:, i] = self.model(user, pos[:, i], b, g, d, 1).data
 
         # score[:, 0 : n_pos] = self.model(user, pos).data
 
@@ -150,9 +150,13 @@ class Solver(object):
                 hit_ratio2 = 0
                 ndcg2 = 0
 
-                for i, data in enumerate(test_loader):
+                for i, (data,box,genre,director) in enumerate(test_loader):
                     data = self.to_variable(data)
-                    hit_ratio, ndcg, mAP = self.hit_ratio_ndcg_map(data)
+                    box = self.to_variable(box)
+                    genre = self.to_variable(genre)
+                    director = self.to_variable(director)
+
+                    hit_ratio, ndcg, mAP = self.hit_ratio_ndcg_map(data, box, genre, director)
                     mAP2 += mAP
                     hit_ratio2 += hit_ratio
                     ndcg2 += ndcg

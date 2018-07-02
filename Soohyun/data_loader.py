@@ -216,9 +216,9 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
         num_user, num_item = np.load(data_path+"/num.npy")
     
-	item_id = np.load(data_path + "/num_to_item_id.npy")
+    item_id = np.load(data_path + "/num_to_item_id.npy")
     print(item_id.shape)
-	#load embedding data
+    #load embedding data
     boxoffice = np.load(data_path+"/boxoffice.npy")
     genre = np.load(data_path+"/genre_onehot.npy")
     director = np.load(data_path+"/director_onehot.npy")
