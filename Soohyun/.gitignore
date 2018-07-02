@@ -4,4 +4,6 @@ __pycache__/
 infer/
 save/
 models/__pychache__/
-data/
+.data/
+*.npy
+*.xlsx

@@ -39,13 +39,14 @@ class User_Item_Dataset(data.Dataset):
 
 
 def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_workers = 2):
-    if not os.path.exists(data_path) or not os.path.exists(data_path+'num.npy') or not data_path:
-        os.makedirs("./data/npy/")
+    if not os.path.exists(data_path) or not os.path.exists(data_path+'num.npy') or "csv" in data_path:
+        os.makedirs("./data/")
         ########################################
         ### load file
         # each line contains (user_id, item_id, rating, timestamp)
         with open(data_path, 'r') as f:
             lines = f.readlines()
+
         ### find user_max, item_max, rating_max
         # convert file to matrix and rename ids
         user_id_to_num = {}
@@ -55,6 +56,7 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
         # delete first line
         lines = lines[1:]
+
 
         for i in range(len(lines)):
             lines[i] = lines[i].split(",")  # "::" for movielens , "," for csv file
@@ -71,14 +73,21 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
                 m = user_id_to_num[lines[i][0]]
                 lines[i][0] = m
 
-            if not lines[i][1] in item_id_to_num:  # rename item id
+            if not lines[i][1] in item_id_to_num:  # rename item id. itemidtonum에 없으면 id를 새로 지정
                 m = len(num_to_item_id)
+                print(lines[i][1], m)
+
                 item_id_to_num[lines[i][1]] = m
                 num_to_item_id.append(lines[i][1])
+
                 lines[i][1] = m
             else:
                 m = item_id_to_num[lines[i][1]]
                 lines[i][1] = m
+
+
+        np.save("num_to_item_id.npy", num_to_item_id)
+        print("num to item id saved!")
 
         num_user = len(num_to_user_id)
         num_item = len(num_to_item_id)
@@ -112,35 +121,9 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
         # new_lines = [line for i, line in enumerate(lines) if not i in delete_list]
         # lines = new_lines
 
-        print('count infer_length')
-        infer_length = 0
         N = 393186
         # find user item negative mapping
         all_item_map = set(list(range(num_item)))
-        for user_id in user_item_map:
-            # all_item_map: {0,1,2, ,,, num_item}
-            if user_id > N:
-                neg_item_list = list(all_item_map - user_item_map[user_id])
-                infer_length += len(neg_item_list)
-                # for neg_item in neg_item_list:
-                #    infer_data.append([user_id, neg_item])
-                if user_id % 10000 == 0: print(user_id)
-            # user_item_neg_map: items_id that users didn't answer
-
-        # infer_data = np.zeros([infer_length, 2], dtype=np.int32)
-        #
-        # count = 0
-        # print('make infer_data')
-        # for user_id in user_item_map:
-        #     # all_item_map: {0,1,2, ,,, num_item}
-        #     if user_id > N:
-        #         neg_item_list = list(all_item_map - user_item_map[user_id])
-        #         for neg_item in neg_item_list:
-        #             infer_data[count, 0] = user_id
-        #             infer_data[count, 1] = neg_item
-        #             count += 1
-        #         if user_id % 10000 == 0: print(user_id)
-        #     # user_item_neg_map: items_id that users didn't answer
 
         ########################################
         ### convert numpy array
@@ -182,6 +165,7 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
                 # Ex) i=0, j=1: nd[0*4 + 1] = [0, random[1], 0]
                 # Ex) i=1, j=0: nd[1*4 + 0] = [0, random[0], 0]
             if user_id % 1000 == 0: print(user_id)
+
         train_data = np.concatenate((train_lines, neg_data), axis=0)
         # train_data.shape: (994169 * 5, 3)
 
@@ -210,15 +194,15 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
         train_data, test_data = \
             torch.LongTensor(train_data), torch.LongTensor(test_data)
 
-        # save to hd5f file
+        # save to npy file
 
-        np.save("./data/npy/train.npy", train_data)
+        np.save("./data/new/train.npy", train_data)
         print("saved train data")
 
-        np.save("./data/npy/test.npy", test_data)
+        np.save("./data/new/test.npy", test_data)
         print("saved test data")
 
-        np.save("./data/npy/num.npy", np.array([num_user, num_item]))
+        np.save("./data/new/num.npy", np.array([num_user, num_item]))
 
     else:
         train_data = np.load(data_path+"train.npy")
@@ -227,6 +211,11 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
         print("loaded test data")
 
         num_user, num_item = np.load(data_path+"num.npy")
+
+        # load embedding data
+        boxoffice = np.load("../../data/boxoffice.npy")
+        genre = np.load("../../data/genre_onehot.npy")
+        director = np.load("../../data/director_onehot.npy")
 
 
 
