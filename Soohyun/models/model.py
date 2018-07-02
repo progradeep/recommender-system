@@ -7,18 +7,26 @@ class GMF(nn.Module):
         super(GMF, self).__init__()
         self.num_users = num_users
         self.num_items = num_items
-        self.latent_dim = latent_dim
+        self.latent_dim = latent_dim # 30
 
         self.embedding_user = nn.Embedding(num_embeddings = self.num_users, embedding_dim = self.latent_dim)
-        self.embedding_item = nn.Embedding(num_embeddings = self.num_items, embedding_dim = self.latent_dim)
-
+        self.embedding_item = nn.Embedding(num_embeddings = self.num_items, embedding_dim = 10)
+        self.embedding_genre = nn.Embedding(num_embeddings=21, embedding_dim=9)
+        self.embedding_dir = nn.Embedding(num_embeddings=3026, embedding_dim=10)
         self.affine_output = nn.Linear(in_features = self.latent_dim, out_features = 1)
         self.logistic = nn.Sigmoid()
         self.mseloss = nn.MSELoss()
 
-    def forward(self, user_indices, item_indices):
+    def forward(self, user_indices, item_indices, b, g, d):
         user_embedding = self.embedding_user(user_indices)
-        item_embedding = self.embedding_item(item_indices)
+
+        item_pref = self.embedding_item(item_indices)
+        g_embedding = self.embedding_genre(g)
+        d_embedding = self.embedding_dir(d)
+        item_embedding = torch.cat((item_pref,b,g_embedding,d_embedding),dim=1)
+
+        print("U",user_embedding.shape)
+        print("I",item_embedding.shape)
 
         element_product = torch.mul(user_embedding, item_embedding)
         logits = self.affine_output(element_product)

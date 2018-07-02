@@ -115,12 +115,15 @@ class Solver(object):
                 self.model.train()
 
                 data = self.to_variable(data)
+                box = self.to_variable(box)
+                genre = self.to_variable(genre)
+                director = self.to_variable(director)
 
                 user_id = data[:, 0]
                 item_id = data[:, 1]
                 ratings = data[:, 2].float()
 
-                outputs = self.model(user_id, item_id)
+                outputs = self.model(user_id, item_id, box, genre, director)
                 loss = self.model.mseloss(outputs, ratings)
 
                 param_sum = 0
