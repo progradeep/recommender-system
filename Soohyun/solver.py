@@ -73,7 +73,7 @@ class Solver(object):
         # score[:, 0 : n_pos] = self.model(user, pos).data
 
         for i in range(test_negs):
-            score[:, i + 1] = self.model(user, neg[:, i]).data
+            score[:, i + 1] = self.model(user, neg[:, i], b, g, d, 1).data
         _, index = torch.topk(score, k = self.topk)
         # index: indices of largest k elements in score.
         # index.shape: (max_user_id, self.topk)
