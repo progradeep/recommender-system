@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # training hyper-parameters
     parser.add_argument('--latent_dim', type = int, default = 30)
     parser.add_argument('--lr', type = float, default = 0.01)
-    parser.add_argument('--reg', type = float, default = 0.01)
+    parser.add_argument('--reg', type = float, default = 0)
     parser.add_argument('--num_epochs', type = int, default = 10)
     parser.add_argument('--batch_size', type = int, default = 10000)
     parser.add_argument('--beta1', type = float, default = 0.5)  # momentum1 in Adam
