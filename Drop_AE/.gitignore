@@ -5,3 +5,5 @@ infer/
 save/
 models/__pychache__/
 data/
+runs/
+*.pyc

@@ -45,9 +45,11 @@ class Solver(object):
         else:
             self.model = torch.load(self.load_path)
 
-        self.optimizer = optim.Adam(self.model.parameters(),
-                                    self.lr, [self.beta1, self.beta2])
-
+        #self.optimizer = optim.Adam(self.model.parameters(),
+        #                            self.lr, [self.beta1, self.beta2])
+        self.optimizer = optim.SGD(self.model.parameters(),
+		        self.lr, momentum = 0.9, weight_decay = 0.0)
+        
         if torch.cuda.is_available() and self.use_gpu:
             self.model.cuda()
 
@@ -121,6 +123,15 @@ class Solver(object):
 
         return mAP
 
+    def dropout(self, data):
+        index = np.nonzero(data)
+        print(index.shape)
+        sampled_row = np.random.randint(len(index), size=int(round(len(index)*0.8)))
+        index = np.delete(index, sampled_row, axis=0)
+        print(index.shape)
+        data[index] = 0.0
+        return data
+
     def train(self, train_loader, valid_loader):
 
         print("Start Train!!")
@@ -134,8 +145,13 @@ class Solver(object):
                 step += 1
                 self.model.train()
 
+
+                
                 data = self.to_variable(data)
+
                 drop_data = self.model.dropout(data)
+
+
                 outputs = self.model(drop_data)
 
                 loss = F.mse_loss(outputs, data.data)

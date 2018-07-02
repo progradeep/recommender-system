@@ -111,8 +111,7 @@ class Solver(object):
         print()
         total_step = len(train_loader)
         for epoch in range(self.num_epochs):
-            for i, data in enumerate(train_loader):
-
+            for i, (data,box,genre,director) in enumerate(train_loader):
                 self.model.train()
 
                 data = self.to_variable(data)
@@ -138,7 +137,7 @@ class Solver(object):
                     print('Epoch [%d/%d], Step[%d/%d], MSE_loss: %.4f'
                           % (epoch + 1, self.num_epochs, i + 1, total_step, loss))
 
-            if (epoch + 1) % self.test_step == 0:
+            if (epoch+1) % self.test_step == 0:
                 self.model.eval()
                 mAP2 = 0
                 hit_ratio2 = 0

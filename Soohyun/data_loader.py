@@ -28,19 +28,26 @@ import os
 
 
 class User_Item_Dataset(data.Dataset):
-    def __init__(self, data):
+    def __init__(self, data,boxoffice,genre,director,item_id):
         self.data = data
+        self.genre = genre
+        self.dir = director
+        self.box = boxoffice
+        self.item_id = item_id
 
     def __getitem__(self, index):
-        return self.data[index]
+        genre = self.genre[self.item_id[self.data[:,1][index]]]
+        box = self.box[self.item_id[self.data[:,1][index]]]
+        director = self.dir[self.item_id[self.data[:,1][index]]]
+        return self.data[index], box, genre, director
 
     def __len__(self):
         return len(self.data)
 
 
 def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_workers = 2):
-    if not os.path.exists(data_path) or not os.path.exists(data_path+'num.npy') or "csv" in data_path:
-        os.makedirs("./data/")
+    if "csv" in data_path:
+        if not os.path.exists("../../data/npy"):os.makedirs("../../data/npy")
         ########################################
         ### load file
         # each line contains (user_id, item_id, rating, timestamp)
@@ -57,7 +64,6 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
         # delete first line
         lines = lines[1:]
 
-
         for i in range(len(lines)):
             lines[i] = lines[i].split(",")  # "::" for movielens , "," for csv file
             lines[i] = lines[i][:2]  # remove timestamp
@@ -73,20 +79,18 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
                 m = user_id_to_num[lines[i][0]]
                 lines[i][0] = m
 
-            if not lines[i][1] in item_id_to_num:  # rename item id. itemidtonum에 없으면 id를 새로 지정
+            if not lines[i][1] in item_id_to_num:  # rename item id.
                 m = len(num_to_item_id)
-                print(lines[i][1], m)
-
                 item_id_to_num[lines[i][1]] = m
                 num_to_item_id.append(lines[i][1])
-
                 lines[i][1] = m
+
             else:
                 m = item_id_to_num[lines[i][1]]
                 lines[i][1] = m
 
 
-        np.save("num_to_item_id.npy", num_to_item_id)
+        np.save("../../data/npy/num_to_item_id.npy", np.array(num_to_item_id))
         print("num to item id saved!")
 
         num_user = len(num_to_user_id)
@@ -196,32 +200,33 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
         # save to npy file
 
-        np.save("./data/new/train.npy", train_data)
+        np.save("../../data/npy/train.npy", train_data)
         print("saved train data")
 
-        np.save("./data/new/test.npy", test_data)
+        np.save("../../data/npy/test.npy", test_data)
         print("saved test data")
 
-        np.save("./data/new/num.npy", np.array([num_user, num_item]))
+        np.save("../../data/npy/num.npy", np.array([num_user, num_item]))
 
     else:
-        train_data = np.load(data_path+"train.npy")
+        train_data = np.load(data_path+"/train.npy")
         print("loaded train data")
-        test_data = np.load(data_path+"test.npy")
+        test_data = np.load(data_path+"/test.npy")
         print("loaded test data")
 
-        num_user, num_item = np.load(data_path+"num.npy")
-
-        # load embedding data
-        boxoffice = np.load("../../data/boxoffice.npy")
-        genre = np.load("../../data/genre_onehot.npy")
-        director = np.load("../../data/director_onehot.npy")
-
-
+        num_user, num_item = np.load(data_path+"/num.npy")
+    
+	item_id = np.load(data_path + "/num_to_item_id.npy")
+    print(item_id.shape)
+	#load embedding data
+    boxoffice = np.load(data_path+"/boxoffice.npy")
+    genre = np.load(data_path+"/genre_onehot.npy")
+    director = np.load(data_path+"/director_onehot.npy")
+    
 
     ### get loader
-    train_data = User_Item_Dataset(train_data)
-    test_data = User_Item_Dataset(test_data)
+    train_data = User_Item_Dataset(train_data,boxoffice,genre,director,item_id)
+    test_data = User_Item_Dataset(test_data,boxoffice,genre,director,item_id)
 
     train_loader = data.DataLoader(train_data, batch_size = batch_size, shuffle = True, num_workers = num_workers)
     test_loader = data.DataLoader(test_data, batch_size = batch_size, shuffle = True, num_workers = num_workers)

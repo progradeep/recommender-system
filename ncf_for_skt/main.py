@@ -14,7 +14,7 @@ def main(config):
         os.makedirs(config.infer_path)
 
     if config.mode == 'train':
-        num_users, num_items, train_loader, test_loader, infer_loader, num_to_user_id, num_to_item_id  \
+        num_users, num_items, train_loader, test_loader\
             = get_loader(data_path = config.data_path,
                         train_negs = config.train_negs,
                         test_negs = config.test_negs,
@@ -23,14 +23,14 @@ def main(config):
         solver = Solver(config, num_users, num_items)
         solver.train(train_loader, test_loader)
     elif config.mode == 'infer':
-        num_users, num_items, infer_loader, num_to_user_id, num_to_item_id  \
+        num_users, num_items, infer_loader\
             = get_infer_loader(data_path = config.data_path,
                         train_negs = config.train_negs,
                         test_negs = config.test_negs,
                         batch_size = config.batch_size,
                         num_workers = config.num_workers)
         solver = Solver(config, num_users, num_items)
-        solver.infer(infer_loader, num_to_user_id, num_to_item_id )
+        solver.infer(infer_loader)
 
 
 if __name__ == '__main__':
@@ -54,9 +54,10 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type = str, default = 'train')  # train or infer
     parser.add_argument('--num_workers', type = int, default = 2)
     parser.add_argument('--save_path', type = str, default = 'save')
+    parser.add_argument('--infer_path', type = str, default = 'infer')
     parser.add_argument('--output_path', type = str, default = 'out.csv')
     parser.add_argument('--load_path', type = str, default = None)
-    parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ.csv')
+    parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ_top50.csv')
     parser.add_argument('--log_step', type = int, default = 10000)
     parser.add_argument('--test_step', type = int, default = 1)
     parser.add_argument('--topk', type = int, default = 50)

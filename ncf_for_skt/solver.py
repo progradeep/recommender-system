@@ -1,3 +1,4 @@
+from __future__ import division
 import math
 import os
 import numpy as np
@@ -7,7 +8,6 @@ from torch import optim
 from torch.autograd import Variable
 
 from models.model import MLP, GMF
-
 
 class Solver(object):
     def __init__(self, config, num_users, num_items):
@@ -149,7 +149,7 @@ class Solver(object):
             model_path = os.path.join(self.save_path, 'model-%d.pkl' % (epoch + 1))
             torch.save(self.model, model_path)
 
-    def infer(self, infer_loader, num_to_user_id, num_to_item_id):
+    def infer(self, infer_loader):
 
         print("Start Inference!!")
         print()
@@ -175,9 +175,9 @@ class Solver(object):
         for user_num, topk_item_num in enumerate(topk_item_for_user):
             for i in range(self.topk + 1):
                 if i == 0:
-                    topk_item_for_user_to_id[user_num][i] = num_to_user_id[user_num]
+                    topk_item_for_user_to_id[user_num][i] = user_num
                 else:
-                    topk_item_for_user_to_id[user_num][i] = num_to_item_id[topk_item_num[i - 1]]
+                    topk_item_for_user_to_id[user_num][i] = topk_item_num[i - 1]
 
         np.save(self.infer_path + "/topk_item_for_user_to_id.npy", topk_item_for_user_to_id)
 
