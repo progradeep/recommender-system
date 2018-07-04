@@ -7,7 +7,7 @@ from surprise import accuracy
 from surprise.model_selection import train_test_split
 
 # path to dataset file
-file_path = '../../data/KISA_VIEWS_UNIQ.csv'
+file_path = '../../data/KISA_TBC_VIEWS_UNIQ.csv'
 
 # As we're loading a custom dataset, we need to define a reader. In the
 # movielens-100k dataset, each line has the following format:
