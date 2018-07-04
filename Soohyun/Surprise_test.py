@@ -13,7 +13,7 @@ file_path = '../../data/KISA_TBC_VIEWS_UNIQ.csv'
 df = pd.read_csv(file_path)
 print(df)
 
-df = df.drop(['DURATION','WATCH_DAY','WATCH_SEQ'])
+df = df.drop(columns = ['DURATION','WATCH_DAY','WATCH_SEQ'])
 df['RATING'] = [1] * len(df['USER_ID'])
 
 print(df)
