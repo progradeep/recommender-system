@@ -22,7 +22,7 @@ print(df)
 # 'user item rating timestamp', separated by '\t' characters.
 reader = Reader(line_format='user item rating', sep=',')
 
-data = Dataset.load_from_file(file_path, reader=reader)
+data = Dataset.load_from_df(df, reader=reader)
 
 trainset, testset = train_test_split(data, test_size=.25)
 
