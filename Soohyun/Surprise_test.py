@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 from surprise import Dataset
 from surprise import Reader
 from surprise import SVD
@@ -9,6 +10,13 @@ from surprise.model_selection import train_test_split
 # path to dataset file
 file_path = '../../data/KISA_TBC_VIEWS_UNIQ.csv'
 
+df = pd.read_csv(file_path)
+print(df)
+
+df = df.drop(['DURATION','WATCH_DAY','WATCH_SEQ'])
+df['RATING'] = [1] * len(df['USER_ID'])
+
+print(df)
 # As we're loading a custom dataset, we need to define a reader. In the
 # movielens-100k dataset, each line has the following format:
 # 'user item rating timestamp', separated by '\t' characters.
