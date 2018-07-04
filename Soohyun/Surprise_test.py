@@ -11,12 +11,10 @@ from surprise.model_selection import train_test_split
 file_path = '../../data/KISA_TBC_VIEWS_UNIQ.csv'
 
 df = pd.read_csv(file_path)
-print(df)
 
 df = df.drop(columns = ['DURATION','WATCH_DAY','WATCH_SEQ'])
 df['RATING'] = [1] * len(df['USER_ID'])
 
-print(df)
 # As we're loading a custom dataset, we need to define a reader. In the
 # movielens-100k dataset, each line has the following format:
 # 'user item rating timestamp', separated by '\t' characters.
@@ -28,7 +26,7 @@ trainset, testset = train_test_split(data, test_size=.25)
 
 # We'll use the famous SVD algorithm.
 algo = SVD()
-algo.fit(trainset)
+algo.fit(trainset, verbose = True, n_epochs = 5)
 predictions = algo.test(testset)
 
 # Then compute RMSE
