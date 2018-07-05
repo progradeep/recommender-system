@@ -28,7 +28,8 @@ def get_top_n(predictions, testdf, n=50):
     # First map the predictions to each user.
     top_n = defaultdict(list)
     for uid, iid, true_r, est, _ in predictions:
-        if iid not in test_df.loc[test_df['USER_ID']==uid]['MOVIE_ID'] and int(uid) > 393186:
+        if int(uid) < 393186: print(uid)
+        if iid not in testdf.loc[testdf['USER_ID']==uid]['MOVIE_ID'] and int(uid) > 393186:
             top_n[uid].append((iid, est))
             print(uid)
 
@@ -65,7 +66,7 @@ algo.fit(trainset)
 predictions = algo.test(testset, verbose=True)
 
 # Then compute RMSE
-accuracy.rmse(predictions)
+# accuracy.rmse(predictions)
 top_n = get_top_n(predictions, test_df, n=50)
 
 output = pd.DataFrame(top_n)
