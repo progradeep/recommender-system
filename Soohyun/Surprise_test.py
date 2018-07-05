@@ -53,7 +53,7 @@ df['RATING'] = [1] * len(df['USER_ID'])
 reader = Reader(line_format='user item rating', sep=',')
 
 data = Dataset.load_from_df(df, reader=reader)
-trainset, testset = train_test_split(data, test_size=0.3, shuffle=False)
+trainset, testset = train_test_split(data, test_size=0.25, shuffle=False)
 
 test_df = df[df['USER_ID'].gt(393186)]
 # data = Dataset.load_from_df(test_df, reader=reader)
