@@ -8,13 +8,6 @@ from surprise import accuracy
 
 from surprise.model_selection import train_test_split
 
-a = [['a','b','c'],[1,2,3],[1,3,4],[2,2,4]]
-d = pd.DataFrame(a, columns=['a','b','c'])
-print(d)
-
-r = d.loc[d['a']==1]
-print(r)
-print(2 in r['b'])
 
 
 
@@ -35,7 +28,7 @@ def get_top_n(predictions, testdf, n=50):
     # First map the predictions to each user.
     top_n = defaultdict(list)
     for uid, iid, true_r, est, _ in predictions:
-        if iid not in test_df.loc[test_df['USER_ID']==uid]['MOVIE_ID']:
+        if iid not in test_df.loc[test_df['USER_ID']==uid]['MOVIE_ID'] and int(uid) > 393186:
             top_n[uid].append((iid, est))
 
     # Then sort the predictions for each user and retrieve the k highest ones.
@@ -59,11 +52,11 @@ df['RATING'] = [1] * len(df['USER_ID'])
 reader = Reader(line_format='user item rating', sep=',')
 
 data = Dataset.load_from_df(df, reader=reader)
-trainset = data.build_full_trainset()
+trainset, testset = train_test_split(data, test_size=0.3)
 
 test_df = df[df['USER_ID'].gt(393186)]
-data = Dataset.load_from_df(test_df, reader=reader)
-testset = data.build_full_trainset()
+# data = Dataset.load_from_df(test_df, reader=reader)
+# testset = data.build_full_trainset()
 
 # We'll use the famous SVD algorithm.
 algo = SVD(verbose = True, n_epochs = 5)
