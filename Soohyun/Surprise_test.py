@@ -30,6 +30,7 @@ def get_top_n(predictions, testdf, n=50):
     for uid, iid, true_r, est, _ in predictions:
         if iid not in test_df.loc[test_df['USER_ID']==uid]['MOVIE_ID'] and int(uid) > 393186:
             top_n[uid].append((iid, est))
+            print(uid)
 
     # Then sort the predictions for each user and retrieve the k highest ones.
     for uid, user_ratings in top_n.items():
@@ -52,7 +53,7 @@ df['RATING'] = [1] * len(df['USER_ID'])
 reader = Reader(line_format='user item rating', sep=',')
 
 data = Dataset.load_from_df(df, reader=reader)
-trainset, testset = train_test_split(data, test_size=0.3)
+trainset, testset = train_test_split(data, test_size=0.3, shuffle=False)
 
 test_df = df[df['USER_ID'].gt(393186)]
 # data = Dataset.load_from_df(test_df, reader=reader)
@@ -68,4 +69,4 @@ accuracy.rmse(predictions)
 top_n = get_top_n(predictions, test_df, n=50)
 
 output = pd.DataFrame(top_n)
-output.to_excel("./output.xlsx")
+output.to_csv("./output.csv")
