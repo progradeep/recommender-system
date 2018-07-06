@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 from collections import defaultdict
 from surprise import Dataset
 from surprise import Reader
@@ -11,7 +12,7 @@ from surprise.model_selection import train_test_split
 
 
 
-def get_top_n(predictions, testdf, n=50):
+def get_top_n(predictions, n=50):
     '''Return the top-N recommendation for each user from a set of predictions.
 
     Args:
@@ -28,10 +29,10 @@ def get_top_n(predictions, testdf, n=50):
     # First map the predictions to each user.
     top_n = defaultdict(list)
     for uid, iid, true_r, est, _ in predictions:
-        if int(uid) < 393186: print(uid)
-        if iid not in testdf.loc[testdf['USER_ID']==uid]['MOVIE_ID'] and int(uid) > 393186:
-            top_n[uid].append((iid, est))
-            print(uid)
+        # if int(uid) < 393186: print(uid)
+        # if iid not in testdf.loc[testdf['USER_ID']==uid]['MOVIE_ID'] and int(uid) > 393186:
+        top_n[uid].append((iid, est))
+        print(uid)
 
     # Then sort the predictions for each user and retrieve the k highest ones.
     for uid, user_ratings in top_n.items():
@@ -54,9 +55,10 @@ df['RATING'] = [1] * len(df['USER_ID'])
 reader = Reader(line_format='user item rating', sep=',')
 
 data = Dataset.load_from_df(df, reader=reader)
-trainset, testset = train_test_split(data, test_size=0.25, shuffle=False)
+trainset, testset = train_test_split(data, test_size=98200, shuffle=False)
 
-test_df = df[df['USER_ID'].gt(393186)]
+
+testset = testset.build_anti_testset()
 # data = Dataset.load_from_df(test_df, reader=reader)
 # testset = data.build_full_trainset()
 
@@ -67,7 +69,7 @@ predictions = algo.test(testset, verbose=True)
 
 # Then compute RMSE
 # accuracy.rmse(predictions)
-top_n = get_top_n(predictions, test_df, n=50)
+top_n = get_top_n(predictions, n=50)
 
 output = pd.DataFrame(top_n)
 output.to_csv("./output.csv")
