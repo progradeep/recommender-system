@@ -20,6 +20,9 @@ test = pd.read_csv(data_path+'question.csv',dtype={'USER_ID':'category',
                                                    'WATCH_SEQ':np.uint8
                                                    })
 
+train = train.drop(['DURATION','WATCH_DAY','WATCH_SEQ'], axis=1)
+test = test.drop(['DURATION','WATCH_DAY','WATCH_SEQ'], axis=1)
+
 watch_count = pd.read_csv(data_path+"watch_count", header=None)
 watch_count.columns = ['MOIVE_ID',"WATCH_COUNT"]
 watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
@@ -130,6 +133,7 @@ params = {
     }
 
 lgbm_model = lgb.train(params, train_set = lgb_train, valid_sets = lgb_val, verbose_eval=5)
+
 
 predictions = lgbm_model.predict(test)
 
