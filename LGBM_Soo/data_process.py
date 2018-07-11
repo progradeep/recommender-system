@@ -1,73 +1,76 @@
 import pandas as pd
 import numpy as np
+import csv
 
 data_path = "../../data/"
 #
 #  # 4th todo
-watched_movie = pd.read_table(data_path+"ae_total.csv")
+"""
+w = []
+with open("../../data/ae_total.csv","rb") as f:
+    watched_movie = f.readlines()
+    #watched = csv.reader(f,delimiter=',')
+    #w.append(watched)
+    watched_movie = [l.strip().split(',') for l in watched_movie]
+watched_movie = pd.DataFrame(watched_movie)[:393187]
+print(watched_movie)
 # # user 1: movie 1, movie 2, movie 3, ... ,movie N
 #
 # print(watched_movie)
 #
 watch_count = pd.read_csv(data_path+"watch_count.csv", header=None)
-watch_count.columns = ['MOIVE_ID',"WATCH_COUNT"]
+watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
 # # movie 1, count
 # # movie 2, count
 #
-# watch_count = watch_count.sort_values(by='MOVIE_ID',ascending=True)
-# print(watch_count)
-total_watch = pd.DataFrame(np.arange(8259), columns=['USER_ID'])
+total_watch = pd.DataFrame(np.arange(8259), columns=['MOVIE_ID'])
 
 total_watch['WATCH_COUNT'] = np.zeros(8259)
 
-for movie_id in watch_count['MOVIE_ID']:
-    total_watch.iloc[movie_id]['WATCH_COUNT'] = watch_count.loc['MOVIE_ID'==movie_id]['WATCH_COUNT'].values
-
+for i in range(watch_count.shape[0]):
+    row = watch_count[i:i+1]
+    movie_id = row['MOVIE_ID'].values[0]
+    try: total_watch.loc[int(movie_id),'WATCH_COUNT'] = row['WATCH_COUNT'].values[0]
+    except: 
+        print(movie_id)
+        continue
 print(total_watch)
-
-
+total_watch.to_csv('./test.csv')
 output = {}
 for userId in range(watched_movie.shape[0]):
     # iterate over user ids
     w_movies = np.array(watched_movie[userId:userId+1].dropna(axis='columns'),dtype=int).squeeze()
-    print(w_movies)
+    print(userId)
     w_count = total_watch.iloc[w_movies]
-    print(w_count)
-    output[userId] = w_count['WATCH_COUNT'].mean()
-    print(output)
+    output[userId] = w_count['WATCH_COUNT'].mean().astype(int)
 
-out = pd.DataFrame(output,columns=["USER_ID",'MEAN_COUNT'])
+out = pd.DataFrame(output.items(),columns=['USER_ID','MEAN_WATCH_COUNT'])
 out.to_csv(data_path+'mean_watch_count.csv')
 
-
-
 """
-# 5. 전체 user 에 대해서 duration 순으로 상위 5개의 movie_id 기록하는 csv 만들기.
-# 5개의 기록이 없으면 뒤에는 일단 9000으로 채워넣기
 
-# train = pd.read_csv(data_path + 'KISA_VIEWS_TBC.csv')
+
+
+train = pd.read_csv(data_path + 'KISA_TBC_VIEWS_UNIQ.csv')
 # user id, movie id, timestamp, duration, sequence
 
-train = pd.DataFrame([[0, 2, 2018, 60, 1],[0, 54, 2017, 47, 2], [1, 2, 2018, 2, 1], [1, 4, 2018, 21, 1],[1, 14, 2018, 32, 1]],
-                     columns=["USER_ID", "movie id", "timestamp", "duration", "sequence"],dtype=int)
-
 def sort(row):
-    sorted_row = row.sort_values(by='duration',ascending=False)
-    print(sorted_row)
+    sorted_row = row.sort_values(by='DURATION',ascending=False)
+    print(sorted_row.shape)
     if sorted_row.shape[0] < 5:
         lack = 5 - sorted_row.shape[0]
-        print(sorted_row['USER_ID'].values)
-        out = [sorted_row['USER_ID'].values[0]]+list(sorted_row['movie id'].values) + [9000] * lack
+        print(sorted_row['USER_ID'].values[0], lack)
+        out = list(sorted_row['MOVIE_ID'].values) + [8259] * lack
         return out #list(sorted_row['movie id']).extend([9000] * lack)
 
-    out = [sorted_row['USER_ID'].values[0]] + list(sorted_row['movie id'].values)
+    out =  list(sorted_row['MOVIE_ID'].values[:5])
     return out
 
 grouped = train.groupby(by='USER_ID').apply(sort).tolist()
 
 
-out = pd.DataFrame(grouped,columns=['USER_ID','MOVIE_1','MOVIE_2','MOVIE_3','MOVIE_4','MOVIE_5'])
+#out = pd.DataFrame(grouped,columns=['USER_ID','MOVIE_1','MOVIE_2','MOVIE_3','MOVIE_4','MOVIE_5'], index=False)
+out = pd.DataFrame(grouped)
 print(out)
-out.to_csv('top_5_duration.csv')
-"""
+out.to_csv(data_path+'top_5_duration.csv')
 
