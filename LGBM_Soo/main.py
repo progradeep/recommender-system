@@ -7,25 +7,37 @@ from sklearn.model_selection import train_test_split
 print("Loading data")
 data_path = "../../data/"
 
-train = pd.read_csv(data_path+"KISA_TBC_VIEWS_UNIQ.csv", dtype={'USER_ID':'category',
+train_pos = pd.read_csv(data_path+"KISA_TBC_VIEWS_UNIQ_TRAIN.csv", dtype={'USER_ID':'category',
                                                                 'MOVIE_ID':'category',
-                                                                'DURATION':np.uint8,
-                                                                'WATCH_DAY':np.uint16,
-                                                                'WATCH_SEQ':np.uint8})
+                                                                })
 
-test = pd.read_csv(data_path+'question.csv',dtype={'USER_ID':'category',
-                                                   'MOVIE_ID':'category',
-                                                   'DURATION':np.uint8,
-                                                   'WATCH_DAY':np.uint16,
-                                                   'WATCH_SEQ':np.uint8
-                                                   })
+train_neg = pd.read_csv(data_path+"KISA_TBC_NEG_TRAIN.csv", dtype={'USER_ID':'category',
+                                                                    'MOVIE_ID':'category',
+                                                                    })
+test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv ',dtype={'USER_ID':'category',
+                                                       'MOVIE_ID':'category',
+                                                       })
 
-train = train.drop(['DURATION','WATCH_DAY','WATCH_SEQ'], axis=1)
-test = test.drop(['DURATION','WATCH_DAY','WATCH_SEQ'], axis=1)
 
-watch_count = pd.read_csv(data_path+"watch_count", header=None)
+train_pos['TARGET'] = 1.0
+train_neg['TARGET'] = 0.0
+
+train = pd.concat([train_pos,train_neg])
+train = train.sample(frac=1).reset_index(drop=True)
+
+print("Train data:")
+print(train[:10])
+
+watch_count = pd.read_csv(data_path+"watch_count.csv", header=None)
 watch_count.columns = ['MOIVE_ID',"WATCH_COUNT"]
 watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
+
+top5_duration = pd.read_csv(data_path+'top5_duration.csv', header=None)
+top5_duration.columns = ['MOVIE_ID','1','2','3','4','5']
+top5_duration = top5_duration.astype(dtype='category')
+
+mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv",dtype={'USER_ID':'category',
+                                                                       'MEAN_WATCH_COUNT':np.uint32})
 
 
 
@@ -90,8 +102,8 @@ test['WATCH_COUNT'].fillna(0, inplace=True)
 test['WATCH_COUNT'] = test['WATCH_COUNT'].astype(np.uint32)
 
 
-# adding new features
 
+# adding new features
 def country_bool(c):
     if u'한국' in c or u'미국' in c:
         return 1
@@ -108,7 +120,7 @@ for col in train.columns:
         train[col] = train[col].astype('category')
         test[col] = test[col].astype('category')
 
-y_train = np.ones(train['USER_ID'].shape)
+y_train = train['TARGET']
 
 X_tr, X_val, y_tr, y_val = train_test_split(train, y_train)
 
@@ -131,6 +143,7 @@ params = {
         'num_rounds': 500,
         'metric' : 'auc'
     }
+
 
 lgbm_model = lgb.train(params, train_set = lgb_train, valid_sets = lgb_val, verbose_eval=5)
 
