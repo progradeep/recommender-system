@@ -2,35 +2,43 @@ import pandas as pd
 import numpy as np
 
 data_path = "../../data/"
-
-""" # 4th todo
-watched_movie = pd.read_csv(data_path+"ae_total.csv", dtype='category')
-# user 1: movie 1, movie 2, movie 3, ... ,movie N
-
-print(watched_movie)
-
+#
+#  # 4th todo
+watched_movie = pd.read_table(data_path+"ae_total.csv")
+# # user 1: movie 1, movie 2, movie 3, ... ,movie N
+#
+# print(watched_movie)
+#
 watch_count = pd.read_csv(data_path+"watch_count.csv", header=None)
 watch_count.columns = ['MOIVE_ID',"WATCH_COUNT"]
-watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
-# movie 1, count
-# movie 2, count
+# # movie 1, count
+# # movie 2, count
+#
+# watch_count = watch_count.sort_values(by='MOVIE_ID',ascending=True)
+# print(watch_count)
+total_watch = pd.DataFrame(np.arange(8259), columns=['USER_ID'])
 
-watch_count = watch_count.sort_values(by='MOVIE_ID',ascending=True)
-print(watch_count)
+total_watch['WATCH_COUNT'] = np.zeros(8259)
+
+for movie_id in watch_count['MOVIE_ID']:
+    total_watch.iloc[movie_id]['WATCH_COUNT'] = watch_count.loc['MOVIE_ID'==movie_id]['WATCH_COUNT'].values
+
+print(total_watch)
+
 
 output = {}
 for userId in range(watched_movie.shape[0]):
     # iterate over user ids
     w_movies = np.array(watched_movie[userId:userId+1].dropna(axis='columns'),dtype=int).squeeze()
     print(w_movies)
-    w_count = watch_count.iloc[w_movies]
+    w_count = total_watch.iloc[w_movies]
     print(w_count)
     output[userId] = w_count['WATCH_COUNT'].mean()
     print(output)
 
 out = pd.DataFrame(output,columns=["USER_ID",'MEAN_COUNT'])
 out.to_csv(data_path+'mean_watch_count.csv')
-"""
+
 
 
 """
