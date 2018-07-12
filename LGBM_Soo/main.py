@@ -23,17 +23,11 @@ train = train.sample(frac=1).reset_index(drop=True)
 print("Train data:")
 print(train[:10])
 
-watch_count = pd.read_csv(data_path+"watch_count.csv", header=None)
-watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
-watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
+watch_count = pd.read_csv(data_path+"watch_count.csv", dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
 
-top5_duration = pd.read_csv(data_path+'top_5_duration.csv', header=None)
-top5_duration.columns = ['MOVIE_ID','1','2','3','4','5']
-top5_duration = top5_duration.astype(dtype={'MOVIE_ID':'category',
-'1':'category','2':'category','3':'category','4':'category','5':'category'})
+top5_duration = pd.read_csv(data_path+'top_5_duration.csv', dtype={'MOVIE_ID':'category', '1':'category','2':'category','3':'category','4':'category','5':'category'})
 
-mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv",dtype={'USER_ID':'category',
-                                                                       'MEAN_WATCH_COUNT':np.uint32})
+mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv",dtype={'USER_ID':'category', 'MEAN_WATCH_COUNT':np.uint32})
 
 
 """
@@ -140,10 +134,21 @@ params = {
 
 lgbm_model = lgb.train(params, train_set = lgb_train, valid_sets = lgb_val, verbose_eval=5)
 
+question_num = 810625238
+batch_size = 10000
+total_step = question_num // batch_size + 1
 
-predictions = lgbm_model.predict(test)
-
-# Writing output to file
 subm = pd.DataFrame()
-subm['target'] = predictions
+for step in range(total_step):
+    if step == total_step - 1: test_batch = test[step*10000:]
+    else: test_batch = test[step*10000:(step+1)*10000]
+    predictions = lgbm_model.predict(test_batch)
+    
+    temp = pd.DataFrame()
+    temp['target'] = predictions
+    if step == 0: subm = temp
+    else: subm = pd.concat([subm, temp])
+
+    print('step: ' + str(step) + '/' + str(total_step))
+
 subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression = 'gzip', index=False, float_format = '%.5f')
