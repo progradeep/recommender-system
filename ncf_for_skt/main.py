@@ -37,13 +37,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # model type
-    parser.add_argument('--model_type', type = str, default = 'gmf')
+    parser.add_argument('--model_type', type = str, default = 'mlp')
 
     # training hyper-parameters
     parser.add_argument('--latent_dim', type = int, default = 8)
     parser.add_argument('--lr', type = float, default = 0.01)
     parser.add_argument('--reg', type = float, default = 0)
-    parser.add_argument('--num_epochs', type = int, default = 10)
+    parser.add_argument('--num_epochs', type = int, default = 20)
     parser.add_argument('--batch_size', type = int, default = 200)
     parser.add_argument('--beta1', type = float, default = 0.5)  # momentum1 in Adam
     parser.add_argument('--beta2', type = float, default = 0.999)  # momentum2 in Adam
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('--infer_path', type = str, default = 'infer')
     parser.add_argument('--output_path', type = str, default = 'out.csv')
     parser.add_argument('--load_path', type = str, default = None)
-    parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ_top50.csv')
+    parser.add_argument('--data_path', type = str, default = '../../data/KISA_TBC_VIEWS_UNIQ.csv')
     parser.add_argument('--log_step', type = int, default = 10000)
     parser.add_argument('--test_step', type = int, default = 1)
     parser.add_argument('--topk', type = int, default = 50)

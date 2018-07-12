@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 import sys
 import pandas as pd
 import numpy as np
@@ -7,20 +8,11 @@ from sklearn.model_selection import train_test_split
 print("Loading data")
 data_path = "../../data/"
 
-train_pos = pd.read_csv(data_path+"KISA_TBC_VIEWS_UNIQ_TRAIN.csv", header=None)
+train_pos = pd.read_csv(data_path+"KISA_TBC_VIEWS_UNIQ_TRAIN.csv", dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
 
-train_neg = pd.read_csv(data_path+"KISA_TBC_NEG_TRAIN.csv", header=None)
+train_neg = pd.read_csv(data_path+"KISA_TBC_NEG_TRAIN_SMALL.csv", dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
 
-test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv ', header=None)
-
-train_pos.columns = ['USER_ID','MOVIE_ID']
-train_pos = train_pos.astype(dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
-
-train_neg.columns = ['USER_ID','MOVIE_ID']
-train_neg = train_neg.astype(dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
-
-test.columns = ['USER_ID','MOVIE_ID']
-test = test.astype(dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
+test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv', dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
 
 train_pos['TARGET'] = 1.0
 train_neg['TARGET'] = 0.0
@@ -32,33 +24,29 @@ print("Train data:")
 print(train[:10])
 
 watch_count = pd.read_csv(data_path+"watch_count.csv", header=None)
-watch_count.columns = ['MOIVE_ID',"WATCH_COUNT"]
+watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
 watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
 
-top5_duration = pd.read_csv(data_path+'top5_duration.csv', header=None)
+top5_duration = pd.read_csv(data_path+'top_5_duration.csv', header=None)
 top5_duration.columns = ['MOVIE_ID','1','2','3','4','5']
-top5_duration = top5_duration.astype(dtype='category')
+top5_duration = top5_duration.astype(dtype={'MOVIE_ID':'category',
+'1':'category','2':'category','3':'category','4':'category','5':'category'})
 
 mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv",dtype={'USER_ID':'category',
                                                                        'MEAN_WATCH_COUNT':np.uint32})
 
 
-
-meta = pd.read_csv(data_path+"meta_combined.csv",dtype={'MOVIE_ID':'category',
-                                                        'TITLE':'category',
-                                                        'MAKE_YEAR':np.uint16,
-                                                        'COUNTRY':'category',
-                                                        'TYPE':'category',
-                                                        'GENRE':'category',
-                                                        'DIRECTOR':'category',
-                                                        'BOXOFFICE':np.uint32})
-
+"""
+meta = pd.read_excel(data_path+"meta_combined.xlsx")
+print(meta[:10])
 
 train = train.merge(meta, on='MOVIE_ID', how='left')
 train = train.merge(watch_count, on='MOVIE_ID', how='left')
 
 test = test.merge(meta, on='MOVIE_ID', how='left')
 test = test.merge(watch_count, on='MOVIE_ID', how='left')
+
+print("merge finished")
 
 # on train data
 train['MAKE_YEAR'].fillna(2000, inplace=True)
@@ -107,14 +95,15 @@ test['WATCH_COUNT'] = test['WATCH_COUNT'].astype(np.uint32)
 
 
 # adding new features
-def country_bool(c):
-    if u'한국' in c or u'미국' in c:
-        return 1
-    else: return 0
+#def country_bool(c):
+#    if u'한국' in c or u'미국' in c:
+#        return 1
+#    else: return 0
 
-train['COUNTRY_BOOL'] = train['COUNTRY'].apply(country_bool).astype(np.int8)
+#train['COUNTRY_BOOL'] = train['COUNTRY'].apply(country_bool).astype(np.int8)
 
-
+print(train[:10])
+"""
 # splitting test and train set
 print("Splitting into train and test")
 
@@ -123,9 +112,10 @@ for col in train.columns:
         train[col] = train[col].astype('category')
         test[col] = test[col].astype('category')
 
-y_train = train['TARGET']
+X_train = train.drop(['TARGET'], axis=1)
+y_train = train['TARGET'].values
 
-X_tr, X_val, y_tr, y_val = train_test_split(train, y_train)
+X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train)
 
 lgb_train = lgb.Dataset(X_tr, y_tr)
 lgb_val = lgb.Dataset(X_val, y_val)
@@ -143,7 +133,7 @@ params = {
         'feature_fraction': 0.9,
         'feature_fraction_seed': 1,
         'max_bin': 256,
-        'num_rounds': 500,
+        'num_rounds': 40,
         'metric' : 'auc'
     }
 

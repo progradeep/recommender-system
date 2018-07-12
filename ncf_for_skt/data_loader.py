@@ -57,8 +57,6 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
     print("num_user : {}".format(num_user))
     print("num_item : {}".format(num_item))
-    max_rating = 1
-    print("max_rating : {}".format(max_rating))
 
     ########################################
     ### find negative map: user_item_neg_map
@@ -146,10 +144,6 @@ def get_loader(data_path, train_negs = 4, test_negs = 99, batch_size = 100, num_
 
         test_data[i, 2:] = item_neg
         if user_id % 10000 == 0: print(user_id)
-
-    ########################################
-    ### normalize
-    train_data[:, 2] = train_data[:, 2] * 1.0 / max_rating
 
     ### numpy to torch
     train_data, test_data = \
