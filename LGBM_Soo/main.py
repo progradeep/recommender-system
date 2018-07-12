@@ -7,17 +7,20 @@ from sklearn.model_selection import train_test_split
 print("Loading data")
 data_path = "../../data/"
 
-train_pos = pd.read_csv(data_path+"KISA_TBC_VIEWS_UNIQ_TRAIN.csv", dtype={'USER_ID':'category',
-                                                                'MOVIE_ID':'category',
-                                                                })
+train_pos = pd.read_csv(data_path+"KISA_TBC_VIEWS_UNIQ_TRAIN.csv", header=None)
 
-train_neg = pd.read_csv(data_path+"KISA_TBC_NEG_TRAIN.csv", dtype={'USER_ID':'category',
-                                                                    'MOVIE_ID':'category',
-                                                                    })
-test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv ',dtype={'USER_ID':'category',
-                                                       'MOVIE_ID':'category',
-                                                       })
+train_neg = pd.read_csv(data_path+"KISA_TBC_NEG_TRAIN.csv", header=None)
 
+test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv ', header=None)
+
+train_pos.columns = ['USER_ID','MOVIE_ID']
+train_pos = train_pos.astype(dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
+
+train_neg.columns = ['USER_ID','MOVIE_ID']
+train_neg = train_neg.astype(dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
+
+test.columns = ['USER_ID','MOVIE_ID']
+test = test.astype(dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
 
 train_pos['TARGET'] = 1.0
 train_neg['TARGET'] = 0.0
