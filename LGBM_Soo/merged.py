@@ -55,6 +55,8 @@ meta['DIRECTOR'] = meta['DIRECTOR'].astype('category')
 
 meta = meta.merge(watch_count,how='left',on='MOVIE_ID')
 
+meta['MOVIE_ID'] = meta['MOVIE_ID'].astype('category')
+
 
 meta['MAKE_YEAR'].fillna(2000, inplace=True)
 meta['MAKE_YEAR'] = meta['MAKE_YEAR'].astype(np.uint16)
@@ -94,19 +96,32 @@ del(tmp)
 
 train = pd.DataFrame(columns=train_key.append(meta.columns).unique())
 
+train['USER_ID'] = train['USER_ID'].astype('category')
+train['MOVIE_ID'] = train['MOVIE_ID'].astype(np.uint32)
+train['TITLE'] = train['TITLE'].astype('category')
+train['MAKE_YEAR'] = train['MAKE_YEAR'].astype(np.uint16)
+train['COUNTRY'] = train['COUNTRY'].astype('category')
+train['TYPE'] = train['TYPE'].astype('category')
+train['GENRE'] = train['GENRE'].astype('category')
+train['DIRECTOR'] = train['DIRECTOR'].astype('category')
+train['BOXOFFICE'] = train['BOXOFFICE'].astype(np.uint32)
+train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
 
-def preprocess_train(x):
-    tmp_train = x.merge(meta, on='m',how='left')
+print(train.dtypes, meta.dtypes)
+
+def preprocess_train(x,train):
+    print(x.dtypes)
+    tmp_train = x.merge(meta, on='MOVIE_ID',how='left')
     print(tmp_train)
-    train = pd.concat([train,tmp_train])
+    train = train.append(tmp_train)
 
 
-[preprocess_train(r) for r in reader]
+[preprocess_train(r,train) for r in reader]
 print(train)
 
 
 reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
-                   dtype={'USER_ID':'category', 'MOVIE_ID':'category'},
+                   dtype={'USER_ID':'category', 'MOVIE_ID':np.unit32},
                      chunksize=100000)
 
 tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
@@ -116,12 +131,12 @@ del(tmp)
 
 test = pd.DataFrame(columns=test_key.append(meta.columns).unique())
 
-def preprocess_test(x):
-    tmp_test = x.merge(meta, on='m',how='left')
+def preprocess_test(x,test):
+    tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
     print(tmp_test)
-    test = pd.concat([test,tmp_test])
+    train = test.append(tmp_test)
 
-[preprocess_test(r) for r in reader]
+[preprocess_test(r,test) for r in reader]
 print(test)
 
 train = train.merge(top5_duration,how='left',on='USER_ID')
