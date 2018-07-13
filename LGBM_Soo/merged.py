@@ -55,7 +55,7 @@ meta['DIRECTOR'] = meta['DIRECTOR'].astype('category')
 
 meta = meta.merge(watch_count,how='left',on='MOVIE_ID')
 
-meta['MOVIE_ID'] = meta['MOVIE_ID'].astype('category')
+meta['MOVIE_ID'] = meta['MOVIE_ID'].astype(np.uint32)
 
 
 meta['MAKE_YEAR'].fillna(2000, inplace=True)
@@ -121,7 +121,7 @@ print(train)
 
 
 reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
-                   dtype={'USER_ID':'category', 'MOVIE_ID':np.unit32},
+                   dtype={'USER_ID':'category', 'MOVIE_ID':np.uint32},
                      chunksize=100000)
 
 tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
