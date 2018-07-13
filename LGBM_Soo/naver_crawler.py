@@ -66,19 +66,27 @@ def findItemByInput(items, meta,year,title):
             find('div',{'class':'mv_info_area'}).find('div',{'class':'mv_info'}).find('dl',{'class':'info_spec'}).\
             find('dd').find('p').find_all("span")
 
+        # print(naverid)
+
+        movie_length = 0
+
+        for i in movie_step1:
+            if '분' in i.text:
+                movie_length = int(i.text.replace('분',''))
+                break
+
+
+
+        # netizen_point_tab_inner > span > em
         try:
-            movie_length =movie_step1[2].text.replace('분','')
-            movie_length = int(movie_length)
-        except IndexError:
-            movie_length = 0
+            rating_count = review_html.find('div',{'id':"netizen_point_tab_inner"}).find('span',{'class':'user_count'}).find('em').text
 
-        rating_count =
-
+        except AttributeError: rating_count = 0
 
         if str(title).replace(" ","") == str(navertitle).replace(" ",""):
             if (naverpubdate != "" and int(naverpubdate) == year) or (meta in naverDirector) or index+1==total_len:
-                print(navertitle, meta, naverDirector, naverpubdate, year)
-                compare.append([naverid, navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector])
+                # print(navertitle, meta, naverDirector, naverpubdate, year)
+                compare.append([naverid, navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector,movie_length,rating_count])
                 break
 
         # 영화의 타이틀 이미지를 표시합니다
@@ -125,7 +133,7 @@ def clean(text):
 
 movie_data = pd.read_excel("C:\\Users\msi\Desktop\Soohyun\CHALLENGERS\TBCC\Final_DATA\\tbcc_combined.xlsx")
 output = []
-for movie in movie_data.values[:]:
+for movie in movie_data.values[:10]:
     mid = int(movie[0])
     print(mid)
     title = movie[1]
@@ -139,6 +147,6 @@ for movie in movie_data.values[:]:
     time.sleep(0.1)
 
 df = pd.DataFrame(output)
-print(df)
+# print(df)
 df.to_excel("naver_crawled.xlsx",index_label=False)
 # getInfoFromNaver(u"007 제1탄-살인번호")

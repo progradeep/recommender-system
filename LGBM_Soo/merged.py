@@ -137,46 +137,6 @@ train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False
 print(train[:10])
 
 
-# merge test and meta
-reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
-                   dtype={'USER_ID':np.uint32, 'MOVIE_ID':np.uint32},
-                     chunksize=1000000)
-
-tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
-
-test_key = tmp.columns
-del(tmp)
-
-test = pd.DataFrame(columns=test_key.append(meta.columns).unique())
-
-def preprocess_test(x):
-    x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
-    tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
-    return tmp_test
-
-for r in reader:
-    test = test.append(preprocess_test(r))
-    print(test.shape)
-
-test['USER_ID'] = test['USER_ID'].astype(np.uint32)
-
-test = test.merge(top5_duration,how='left',on='USER_ID')
-test = test.merge(mean_watch_count,how='left',on='USER_ID')
-
-
-test['MOVIE_ID'] = test['MOVIE_ID'].astype('category')
-test['USER_ID'] = test['USER_ID'].astype('category')
-
-print("Test data:")
-
-test = test.drop(test.columns[test.columns.str.contains('unnamed',case=False)],axix=1)
-
-print(test[:10])
-
-print("Merge finished")
-
-
-
 
 # splitting test and train set
 print("Splitting into train and val")
@@ -184,7 +144,6 @@ print("Splitting into train and val")
 for col in train.columns:
     if train[col].dtype == object:
         train[col] = train[col].astype('category')
-        test[col] = test[col].astype('category')
 
 X_train = train.drop(['TARGET'], axis=1)
 y_train = train['TARGET'].values
@@ -214,18 +173,42 @@ params = {
 
 lgbm_model = lgb.train(params, train_set = lgb_train, valid_sets = lgb_val, verbose_eval=5)
 
+del(train)
+del(lgb_train)
+del(lgb_val)
+
 question_num = 810625237
-batch_size = 1000000
+batch_size = 10000000
 total_step = question_num // batch_size + 1
 
-subm = pd.DataFrame()
-for step in range(total_step):
-    if step == total_step - 1:
-        test_batch = test[step * batch_size:]
-    else:
-        test_batch = test[step * batch_size:(step + 1) * batch_size]
-    predictions = lgbm_model.predict(test_batch)
+# read test data
+reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
+                   dtype={'USER_ID':np.uint32, 'MOVIE_ID':np.uint32},
+                     chunksize=batch_size)
 
+tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
+
+test_key = tmp.columns
+del(tmp)
+
+test = pd.DataFrame(columns=test_key.append(meta.columns).unique())
+
+def preprocess_test(x):
+    x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
+    tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
+    tmp_test = tmp_test.merge(top5_duration,how='left',on='USER_ID')
+    tmp_test = tmp_test.merge(mean_watch_count,how='left',on='USER_ID')
+    tmp_test['MOVIE_ID'] = tmp_test['MOVIE_ID'].astype('category')
+    tmp_test['USER_ID'] = tmp_test['USER_ID'].astype('category')
+    tmp_test = tmp_test.drop(tmp_test.columns[tmp_test.columns.str.contains('unnamed', case=False)], axis=1)
+    print(tmp_test.shape)
+    return tmp_test
+
+
+subm = pd.DataFrame()
+step = 0
+for r in reader:
+    predictions = lgbm_model.predict(preprocess_test(r))
     temp = pd.DataFrame()
     temp['target'] = predictions
     if step == 0:
@@ -234,5 +217,24 @@ for step in range(total_step):
         subm = pd.concat([subm, temp])
 
     print('step: ' + str(step) + '/' + str(total_step))
+    step += 1
 
 subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
+#
+# for step in range(total_step):
+#     if step == total_step - 1:
+#         test_batch = test[step * batch_size:]
+#     else:
+#         test_batch = test[step * batch_size:(step + 1) * batch_size]
+#
+#
+#     temp = pd.DataFrame()
+#     temp['target'] = predictions
+#     if step == 0:
+#         subm = temp
+#     else:
+#         subm = pd.concat([subm, temp])
+#
+#     print('step: ' + str(step) + '/' + str(total_step))
+#
+# subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
