@@ -2,7 +2,40 @@ import pandas as pd
 import numpy as np
 import re
 
+
 data_path = "../../data/"
+
+watched_movie = pd.read_csv(data_path+"ae_total.csv", dtype='category')
+watched_movie = watched_movie[393186:]
+
+# user 1: movie 1, movie 2, movie 3, ... ,movie N
+
+print(watched_movie)
+
+watch_count = pd.read_csv(data_path+"watch_count.csv", header=None)
+watch_count.columns = ['MOIVE_ID',"WATCH_COUNT"]
+watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
+# movie 1, count
+# movie 2, count
+
+watch_count = watch_count.sort_values(by='MOVIE_ID',ascending=True)
+print(watch_count)
+
+output = {}
+for userId in range(watched_movie.shape[0]):
+    # iterate over user ids
+    w_movies = np.array(watched_movie[userId:userId+1].dropna(axis='columns'),dtype=int).squeeze()
+    print(w_movies)
+    w_count = watch_count.iloc[w_movies]
+    print(w_count)
+    output[userId] = w_count['WATCH_COUNT'].mean()
+    print(output)
+
+out = pd.DataFrame(output,columns=["USER_ID",'MEAN_COUNT'])
+out.to_csv(data_path+'mean_watch_count_Q.csv')
+
+
+
 train = pd.read_csv(data_path + 'KISA_TBC_VIEWS_UNI.csv')
 # user id, movie id, timestamp, duration, sequence
 train = train[train.loc['USER_ID']>393186]
@@ -23,4 +56,4 @@ def sort(row):
 grouped = train.groupby(by='USER_ID').apply(sort).tolist()
 out = pd.DataFrame(grouped,columns=['USER_ID','MOVIE_1','MOVIE_2','MOVIE_3','MOVIE_4','MOVIE_5'])
 print(out)
-out.to_csv('top_5_duration_Q.csv')
+out.to_csv(data_path+'top_5_duration_Q.csv')
