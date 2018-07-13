@@ -124,7 +124,8 @@ print(train[:10])
 
 # train = pd.read_csv(data_path+'FINAL_train_merged.csv')
 # print(train.dtypes)
-
+train['USER_ID'] = train['USER_ID'].astype(np.uint32)
+print(train.dtypes,top5_duration.dtypes,mean_watch_count.dtypes)
 train = train.merge(top5_duration,how='left',on='USER_ID')
 train = train.merge(mean_watch_count,how='left',on='USER_ID')
 
