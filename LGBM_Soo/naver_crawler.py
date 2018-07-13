@@ -50,11 +50,7 @@ def findItemByInput(items, meta,year,title):
         naverDirector = ",".join(naverDirector.split("|")[:-1])
 
 
-        if str(title).replace(" ","") == str(navertitle).replace(" ",""):
-            if (naverpubdate != "" and int(naverpubdate) == year) or (meta in naverDirector) or index+1==total_len:
-                print(navertitle, meta, naverDirector, naverpubdate, year)
-                compare.append([navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector])
-                break
+
 
 
 
@@ -67,6 +63,12 @@ def findItemByInput(items, meta,year,title):
 
         #네이버가 다루는 영화 고유 ID를 얻어 옵니다다
         naverid = re.split("code=", naverlink)[1]
+
+        if str(title).replace(" ","") == str(navertitle).replace(" ",""):
+            if (naverpubdate != "" and int(naverpubdate) == year) or (meta in naverDirector) or index+1==total_len:
+                print(navertitle, meta, naverDirector, naverpubdate, year)
+                compare.append([naverid, navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector])
+                break
 
         # 영화의 타이틀 이미지를 표시합니다
         # if (item['image'] != None and "http" in item['image']):
@@ -112,8 +114,9 @@ def clean(text):
 
 movie_data = pd.read_excel("C:\\Users\msi\Desktop\Soohyun\CHALLENGERS\TBCC\Final_DATA\\tbcc_combined.xlsx")
 output = []
-for movie in movie_data.values[:10]:
+for movie in movie_data.values[:]:
     mid = int(movie[0])
+    print(mid)
     title = movie[1]
     title, year = clean(title)
     meta = str(movie[6]).split(',')[0]
@@ -126,5 +129,5 @@ for movie in movie_data.values[:10]:
 
 df = pd.DataFrame(output)
 print(df)
-df.to_excel("naver_crawled.xlsx",columns=['MOVIE_ID','TITLE','SUBTITLE','PUBYEAR','ACTOR','RATING','DIRECTOR'])
+df.to_excel("naver_crawled.xlsx",index_label=False)
 # getInfoFromNaver(u"007 제1탄-살인번호")

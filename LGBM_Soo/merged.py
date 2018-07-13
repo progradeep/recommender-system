@@ -114,13 +114,15 @@ train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
 def preprocess_train(x,train):
     x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
     tmp_train = x.merge(meta, on='MOVIE_ID',how='left')
-    train.to_csv(tmp_train,mode='a',index_label=False)
+    train = train.append(tmp_train)
+    print(train.shape)
+    # tmp_train.to_csv(data_path+"FINAL_train_merged.csv",mode='a',index_label=False,header=None)
 
 
 [preprocess_train(r,train) for r in reader]
 
-train = pd.read_csv(data_path+'FINAL_train_merged.csv')
-print(train.dtypes)
+# train = pd.read_csv(data_path+'FINAL_train_merged.csv')
+# print(train.dtypes)
 
 train = train.merge(top5_duration,how='left',on='USER_ID')
 train = train.merge(mean_watch_count,how='left',on='USER_ID')
