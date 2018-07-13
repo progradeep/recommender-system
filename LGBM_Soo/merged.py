@@ -85,9 +85,11 @@ print(meta.dtypes)
 print("Meta data:")
 print(meta[:10])
 
+
+# merge train and meta
 tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID','TARGET'])
 reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
-                                       'MOVIE_ID':'category',
+                                       'MOVIE_ID':np.uint32,
                                        'TARGET':np.float32},
                      chunksize=100000)
 
@@ -110,16 +112,23 @@ train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
 print(train.dtypes, meta.dtypes)
 
 def preprocess_train(x,train):
-    print(x.dtypes)
+    x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
     tmp_train = x.merge(meta, on='MOVIE_ID',how='left')
-    print(tmp_train)
     train = train.append(tmp_train)
 
 
 [preprocess_train(r,train) for r in reader]
-print(train)
+
+train = train.merge(top5_duration,how='left',on='USER_ID')
+train = train.merge(mean_watch_count,how='left',on='USER_ID')
+
+train['MOVIE_ID'] = train['MOVIE_ID'].astype('category')
+
+print("Train data:")
+print(train[:10])
 
 
+# merge test and meta
 reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
                    dtype={'USER_ID':'category', 'MOVIE_ID':np.uint32},
                      chunksize=100000)
@@ -132,28 +141,28 @@ del(tmp)
 test = pd.DataFrame(columns=test_key.append(meta.columns).unique())
 
 def preprocess_test(x,test):
+    x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
     tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
-    print(tmp_test)
     train = test.append(tmp_test)
 
 [preprocess_test(r,test) for r in reader]
-print(test)
 
-train = train.merge(top5_duration,how='left',on='USER_ID')
-train = train.merge(mean_watch_count,how='left',on='USER_ID')
+
 test = test.merge(top5_duration,how='left',on='USER_ID')
 test = test.merge(mean_watch_count,how='left',on='USER_ID')
 
-print("merge finished")
+test['MOVIE_ID'] = test['MOVIE_ID'].astype('category')
+
+print("Test data:")
+print(test[:10])
+
+print("Merge finished")
 
 
 
-
-
-print(train[:10])
 
 # splitting test and train set
-print("Splitting into train and test")
+print("Splitting into train and val")
 
 for col in train.columns:
     if train[col].dtype == object:
