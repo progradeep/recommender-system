@@ -62,12 +62,17 @@ def findItemByInput(items, meta,year,title):
 
         review_html = get_soup("https://movie.naver.com/movie/bi/mi/point.nhn?code="+naverid)
         # content > div.article > div.mv_info_area > div.mv_info > dl > dd:nth-child(2) > p > span:nth-child(3)
-        movie_length = review_html.find("div",{'id':"content"}).find('div',{'class':'article'}).\
+        movie_step1 = review_html.find("div",{'id':"content"}).find('div',{'class':'article'}).\
             find('div',{'class':'mv_info_area'}).find('div',{'class':'mv_info'}).find('dl',{'class':'info_spec'}).\
-            find('dd')
+            find('dd').find('p').find_all("span")
 
+        try:
+            movie_length =movie_step1[2].text.replace('분','')
+            movie_length = int(movie_length)
+        except IndexError:
+            movie_length = 0
 
-        print(movie_length)
+        rating_count =
 
 
         if str(title).replace(" ","") == str(navertitle).replace(" ",""):

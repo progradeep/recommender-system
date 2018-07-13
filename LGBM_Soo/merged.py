@@ -122,10 +122,8 @@ for r in reader:
 
 print(train[:10])
 
-# train = pd.read_csv(data_path+'FINAL_train_merged.csv')
-# print(train.dtypes)
 train['USER_ID'] = train['USER_ID'].astype(np.uint32)
-print(train.dtypes,top5_duration.dtypes,mean_watch_count.dtypes)
+
 train = train.merge(top5_duration,how='left',on='USER_ID')
 train = train.merge(mean_watch_count,how='left',on='USER_ID')
 
@@ -133,6 +131,9 @@ train['MOVIE_ID'] = train['MOVIE_ID'].astype('category')
 train['USER_ID'] = train['USER_ID'].astype('category')
 
 print("Train data:")
+train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False)],axix=1)
+#      df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1)
+
 print(train[:10])
 
 
@@ -157,6 +158,8 @@ for r in reader:
     test = test.append(preprocess_test(r))
     print(test.shape)
 
+test['USER_ID'] = test['USER_ID'].astype(np.uint32)
+
 test = test.merge(top5_duration,how='left',on='USER_ID')
 test = test.merge(mean_watch_count,how='left',on='USER_ID')
 
@@ -165,6 +168,9 @@ test['MOVIE_ID'] = test['MOVIE_ID'].astype('category')
 test['USER_ID'] = test['USER_ID'].astype('category')
 
 print("Test data:")
+
+test = test.drop(test.columns[test.columns.str.contains('unnamed',case=False)],axix=1)
+
 print(test[:10])
 
 print("Merge finished")
