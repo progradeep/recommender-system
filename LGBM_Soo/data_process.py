@@ -4,8 +4,9 @@ import re
 
 
 data_path = "../../data/"
-
-watched_movie = pd.read_csv(data_path+"ae_total.csv", dtype='category')
+with open(data_path+"ae_total.csv",'r') as f:
+    watched_movie = f.readlines()
+print(watched_movie)
 watched_movie = watched_movie[393186:]
 
 # user 1: movie 1, movie 2, movie 3, ... ,movie N
