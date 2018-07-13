@@ -134,14 +134,14 @@ params = {
 
 lgbm_model = lgb.train(params, train_set = lgb_train, valid_sets = lgb_val, verbose_eval=5)
 
-question_num = 810625238
-batch_size = 10000
+question_num = 810625237
+batch_size = 1000000
 total_step = question_num // batch_size + 1
 
 subm = pd.DataFrame()
 for step in range(total_step):
-    if step == total_step - 1: test_batch = test[step*10000:]
-    else: test_batch = test[step*10000:(step+1)*10000]
+    if step == total_step - 1: test_batch = test[step*batch_size:]
+    else: test_batch = test[step*batch_size:(step+1)*batch_size]
     predictions = lgbm_model.predict(test_batch)
     
     temp = pd.DataFrame()
