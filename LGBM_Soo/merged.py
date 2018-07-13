@@ -26,7 +26,7 @@ train = train.sample(frac=1).reset_index(drop=True)
 del(train_pos)
 del(train_neg)
 
-train.to_csv("../../train_tmp.csv")
+train.to_csv(data_path+"train_tmp.csv")
 print("Train data:")
 print(train[:10])
 
@@ -44,9 +44,33 @@ mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv",dtype={'USER_ID'
                                                                        'MEAN_WATCH_COUNT':np.uint32})
 
 
-
 meta = pd.read_excel(data_path+"meta_combined.xlsx")
 
+meta['MOVIE_ID'] = meta['MOVIE_ID'].astype('category')
+meta['TITLE'] = meta['TITLE'].astype('category')
+
+meta['MAKE_YEAR'].fillna(2000, inplace=True)
+meta['MAKE_YEAR'] = meta['MAKE_YEAR'].astype(np.uint16)
+
+meta['COUNTRY'] = meta['COUNTRY'].cat.add_categories['no_country']
+meta['COUNTRY'].fillna('no_country', inplace=True)
+
+meta['TYPE'] = meta['TYPE'].cat.add_categories['no_type']
+meta['TYPE'].fillna('no_type', inplace=True)
+
+meta['GENRE'] = meta['GENRE'].cat.add_categories['no_genre']
+meta['GENRE'].fillna('no_genre', inplace=True)
+
+meta['DIRECTOR'] = meta['DIRECTOR'].cat.add_categories['no_type']
+meta['DIRECTOR'].fillna('no_type', inplace=True)
+
+meta['BOXOFFICE'].fillna(0, inplace=True)
+meta['BOXOFFICE'] = meta['BOXOFFICE'].astype(np.uint32)
+
+meta['WATCH_COUNT'].fillna(0, inplace=True)
+meta['WATCH_COUNT'] = meta['WATCH_COUNT'].astype(np.uint32)
+
+print(meta.dtypes)
 
 meta = meta.merge(watch_count,how='left',on='MOVIE_ID')
 meta = meta.merge(top5_duration,how='left',on='MOVIE_ID')
@@ -68,9 +92,9 @@ def preprocess_train(x):
     print(tmp_train)
     train = pd.concat([train,tmp_train])
 
-reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'u':'category',
-                                       'm':'category',
-                                       't':np.float32},
+reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
+                                       'MOVIE_ID':'category',
+                                       'TARGET':np.float32},
                      chunksize=100000)
 
 [preprocess_train(r) for r in reader]
@@ -92,50 +116,6 @@ print(test)
 print("merge finished")
 
 
-
-# on train data
-train['MAKE_YEAR'].fillna(2000, inplace=True)
-train['MAKE_YEAR'] = train['MAKE_YEAR'].astype(np.uint16)
-
-train['COUNTRY'] = train['COUNTRY'].cat.add_categories['no_country']
-train['COUNTRY'].fillna('no_country', inplace=True)
-
-train['TYPE'] = train['TYPE'].cat.add_categories['no_type']
-train['TYPE'].fillna('no_type', inplace=True)
-
-train['GENRE'] = train['GENRE'].cat.add_categories['no_genre']
-train['GENRE'].fillna('no_genre', inplace=True)
-
-train['DIRECTOR'] = train['DIRECTOR'].cat.add_categories['no_type']
-train['DIRECTOR'].fillna('no_type', inplace=True)
-
-train['BOXOFFICE'].fillna(0, inplace=True)
-train['BOXOFFICE'] = train['BOXOFFICE'].astype(np.uint32)
-
-train['WATCH_COUNT'].fillna(0, inplace=True)
-train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
-
-# on test data
-test['MAKE_YEAR'].fillna(2000, inplace=True)
-test['MAKE_YEAR'] = test['MAKE_YEAR'].astype(np.uint16)
-
-test['COUNTRY'] = test['COUNTRY'].cat.add_categories['no_country']
-test['COUNTRY'].fillna('no_country', inplace=True)
-
-test['TYPE'] = test['TYPE'].cat.add_categories['no_type']
-test['TYPE'].fillna('no_type', inplace=True)
-
-test['GENRE'] = test['GENRE'].cat.add_categories['no_genre']
-test['GENRE'].fillna('no_genre', inplace=True)
-
-test['DIRECTOR'] = test['DIRECTOR'].cat.add_categories['no_type']
-test['DIRECTOR'].fillna('no_type', inplace=True)
-
-test['BOXOFFICE'].fillna(0, inplace=True)
-test['BOXOFFICE'] = test['BOXOFFICE'].astype(np.uint32)
-
-test['WATCH_COUNT'].fillna(0, inplace=True)
-test['WATCH_COUNT'] = test['WATCH_COUNT'].astype(np.uint32)
 
 
 

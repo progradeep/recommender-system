@@ -4,7 +4,8 @@ import urllib.request
 from urllib.parse import quote
 import json
 import re
-import requests
+import requests, time
+import pandas as pd
 
 #네이버 검색 Open API 사용 요청시 얻게되는 정보를 입력합니다
 naver_client_id = "wXxPslZJGJrplu5FPfKk"
@@ -33,7 +34,9 @@ def searchByTitle(title):
     else:
         print("Error Code:" + rescode)
 
-def findItemByInput(items):
+def findItemByInput(items, meta,year,title):
+    total_len = len(items)
+    compare = []
     for index, item in enumerate(items):
         navertitle = cleanhtml(item['title'])
         naversubtitle = cleanhtml(item['subtitle'])
@@ -41,8 +44,19 @@ def findItemByInput(items):
         naveractor = cleanhtml(item['actor'])
         naverlink = cleanhtml(item['link'])
         naveruserScore = cleanhtml(item['userRating'])
-        main_actors = cleanhtml(item['actor'])
-        pub_date = cleanhtml(item['pubDate'])
+        naverDirector = cleanhtml(item['director'])
+
+        naveractor = ",".join(naveractor.split("|")[:-1])
+        naverDirector = ",".join(naverDirector.split("|")[:-1])
+
+
+        if str(title).replace(" ","") == str(navertitle).replace(" ",""):
+            if (naverpubdate != "" and int(naverpubdate) == year) or (meta in naverDirector) or index+1==total_len:
+                print(navertitle, meta, naverDirector, naverpubdate, year)
+                compare.append([navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector])
+                break
+
+
 
         navertitle1 = navertitle.replace(" ","")
         navertitle1 = navertitle1.replace("-", ",")
@@ -59,15 +73,15 @@ def findItemByInput(items):
         #    response = requests.get(item['image'])
         #    img = Image.open(BytesIO(response.content))
         #    img.show()
+    if len(compare) > 0: return compare[-1]
+    return compare
 
-        print(index, navertitle, naversubtitle, naveruserScore)
-
-def getInfoFromNaver(searchTitle):
+def getInfoFromNaver(searchTitle,meta,year,title):
     items = searchByTitle(searchTitle)
     if (items != None):
-        findItemByInput(items)
+        return findItemByInput(items,meta,year,title)
     else:
-        print("No result")
+        return []
 
 def get_soup(url):
     source_code = requests.get(url)
@@ -87,4 +101,29 @@ def get_soup(url):
 #     else:
 #         return 0.0
 
-getInfoFromNaver(u"007 제1탄-살인번호")
+def clean(text):
+    y = re.compile("\([1-9]*\)")
+    year = y.findall(str(text))
+    p = re.compile('\[.*?\]|\(.*?\)')
+    cleantext = p.sub("",str(text))
+    if len(year) != 0:
+        return cleantext, int(year[0][1:-1])
+    else: return cleantext, 0
+
+movie_data = pd.read_excel("meta.xlsx")
+output = []
+for movie in movie_data.values[:]:
+    mid = int(movie[0])
+    title = movie[1]
+    title, year = clean(title)
+    meta = str(movie[6]).split(',')[0]
+    # print(meta)
+    ret = getInfoFromNaver(u"%s"%title,meta,year,title)
+    ret = [mid] + ret
+    if len(ret) > 0:
+        output.append(ret)
+    time.sleep(0.1)
+
+df = pd.DataFrame(output)
+df.to_csv("naver_crawled.csv", index_label=False)
+# getInfoFromNaver(u"007 제1탄-살인번호")
