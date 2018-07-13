@@ -69,7 +69,7 @@ meta['GENRE'] = meta['GENRE'].cat.add_categories(['no_genre'])
 meta['GENRE'].fillna('no_genre', inplace=True)
 
 meta['DIRECTOR'] = meta['DIRECTOR'].cat.add_categories(['no_dir'])
-meta['DIRECTOR'].fillna('no_type', inplace=True)
+meta['DIRECTOR'].fillna('no_dir', inplace=True)
 
 meta['BOXOFFICE'].fillna(0, inplace=True)
 meta['BOXOFFICE'] = meta['BOXOFFICE'].astype(np.uint32)
@@ -83,13 +83,14 @@ print(meta.dtypes)
 print("Meta data:")
 print(meta[:10])
 
+tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID','TARGET'])
 reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
                                        'MOVIE_ID':'category',
                                        'TARGET':np.float32},
                      chunksize=100000)
 
-train_key = reader.columns
-
+train_key = tmp.columns
+del(tmp)
 
 train = pd.DataFrame(columns=train_key.append(meta.columns).unique())
 
@@ -108,7 +109,10 @@ reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
                    dtype={'USER_ID':'category', 'MOVIE_ID':'category'},
                      chunksize=100000)
 
-test_key = reader.columns
+tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
+
+test_key = tmp.columns
+del(tmp)
 
 test = pd.DataFrame(columns=test_key.append(meta.columns).unique())
 
