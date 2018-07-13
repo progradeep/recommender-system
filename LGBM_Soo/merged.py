@@ -47,6 +47,10 @@ meta = pd.read_excel(data_path+"meta_combined.xlsx")
 
 meta['MOVIE_ID'] = meta['MOVIE_ID'].astype('category')
 meta['TITLE'] = meta['TITLE'].astype('category')
+meta['COUNTRY'] = meta['COUNTRY'].astype('category')
+meta['TYPE'] = meta['TYPE'].astype('category')
+meta['GENRE'] = meta['GENRE'].astype('category')
+meta['DIRECTOR'] = meta['DIRECTOR'].astype('category')
 
 meta['MAKE_YEAR'].fillna(2000, inplace=True)
 meta['MAKE_YEAR'] = meta['MAKE_YEAR'].astype(np.uint16)
