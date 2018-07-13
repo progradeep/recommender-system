@@ -45,7 +45,6 @@ mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,'MEAN_WATC
 
 meta = pd.read_excel(data_path+"meta_combined.xlsx")
 
-meta['MOVIE_ID'] = meta['MOVIE_ID'].astype('category')
 meta['TITLE'] = meta['TITLE'].astype('category')
 meta['COUNTRY'] = meta['COUNTRY'].astype('category')
 meta['TYPE'] = meta['TYPE'].astype('category')
@@ -131,7 +130,7 @@ train['MOVIE_ID'] = train['MOVIE_ID'].astype('category')
 train['USER_ID'] = train['USER_ID'].astype('category')
 
 print("Train data:")
-train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False)],axix=1)
+train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False)],axis=1)
 #      df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1)
 
 print(train[:10])
@@ -191,7 +190,6 @@ tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
 test_key = tmp.columns
 del(tmp)
 
-test = pd.DataFrame(columns=test_key.append(meta.columns).unique())
 
 def preprocess_test(x):
     x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)

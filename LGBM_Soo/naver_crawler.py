@@ -62,18 +62,21 @@ def findItemByInput(items, meta,year,title):
 
         review_html = get_soup("https://movie.naver.com/movie/bi/mi/point.nhn?code="+naverid)
         # content > div.article > div.mv_info_area > div.mv_info > dl > dd:nth-child(2) > p > span:nth-child(3)
-        movie_step1 = review_html.find("div",{'id':"content"}).find('div',{'class':'article'}).\
+        try:
+            movie_step1 = review_html.find("div",{'id':"content"}).find('div',{'class':'article'}).\
             find('div',{'class':'mv_info_area'}).find('div',{'class':'mv_info'}).find('dl',{'class':'info_spec'}).\
             find('dd').find('p').find_all("span")
+            movie_length = 0
 
+            for i in movie_step1:
+                if '분' in i.text:
+                    movie_length = int(i.text.replace('분', ''))
+                    break
+        except:
+            movie_length = 0
         # print(naverid)
 
-        movie_length = 0
 
-        for i in movie_step1:
-            if '분' in i.text:
-                movie_length = int(i.text.replace('분',''))
-                break
 
 
 
@@ -133,7 +136,7 @@ def clean(text):
 
 movie_data = pd.read_excel("C:\\Users\msi\Desktop\Soohyun\CHALLENGERS\TBCC\Final_DATA\\tbcc_combined.xlsx")
 output = []
-for movie in movie_data.values[:10]:
+for movie in movie_data.values[:]:
     mid = int(movie[0])
     print(mid)
     title = movie[1]
