@@ -111,15 +111,18 @@ train['BOXOFFICE'] = train['BOXOFFICE'].astype(np.uint32)
 train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
 
 
-def preprocess_train(x,train):
+def preprocess_train(x):
     x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
     tmp_train = x.merge(meta, on='MOVIE_ID',how='left')
-    train = train.append(tmp_train)
-    print(train.shape)
+    return tmp_train
     # tmp_train.to_csv(data_path+"FINAL_train_merged.csv",mode='a',index_label=False,header=None)
 
 
-[preprocess_train(r,train) for r in reader]
+for r in reader:
+    train = train.append(preprocess_train(r))
+    print(train.shape)
+
+print(train[:10])
 
 # train = pd.read_csv(data_path+'FINAL_train_merged.csv')
 # print(train.dtypes)
