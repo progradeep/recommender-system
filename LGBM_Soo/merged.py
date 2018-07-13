@@ -5,43 +5,42 @@ import numpy as np
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split
 
-print("Loading train, test data")
+# print("Loading train, test data")
 data_path = "../../data/"
 
-train_pos = pd.read_csv(data_path+"KISA_TBC_VIEWS_UNIQ_TRAIN.csv",
-                        dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
-
-train_neg = pd.read_csv(data_path+"KISA_TBC_NEG_TRAIN_SMALL.csv",
-                        dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
-
-test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
-                   dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
-
-train_pos['TARGET'] = 1.0
-train_neg['TARGET'] = 0.0
-
-train = pd.concat([train_pos,train_neg])
-train = train.sample(frac=1).reset_index(drop=True)
-
-del(train_pos)
-del(train_neg)
-
-train.to_csv(data_path+"train_tmp.csv")
-print("Train data:")
-print(train[:10])
+# train_pos = pd.read_csv(data_path+"KISA_TBC_VIEWS_UNIQ_TRAIN.csv",
+#                         dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
+#
+# train_neg = pd.read_csv(data_path+"KISA_TBC_NEG_TRAIN_SMALL.csv",
+#                         dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
+#
+# test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
+#                    dtype={'USER_ID':'category', 'MOVIE_ID':'category'})
+#
+# train_pos['TARGET'] = 1.0
+# train_neg['TARGET'] = 0.0
+#
+# train = pd.concat([train_pos,train_neg])
+# train = train.sample(frac=1).reset_index(drop=True)
+#
+# del(train_pos)
+# del(train_neg)
+#
+# train.to_csv(data_path+"train_tmp.csv")
+# print("Train data:")
+# print(train[:10])
 
 print("Loading meta data")
-watch_count = pd.read_csv(data_path+"watch_count.csv", header=None)
+watch_count = pd.read_csv(data_path+"watch_count.csv")
 watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
 watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
 
-top5_duration = pd.read_csv(data_path+'top_5_duration.csv', header=None)
-top5_duration.columns = ['MOVIE_ID','1','2','3','4','5']
+top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
 top5_duration = top5_duration.astype(dtype={'MOVIE_ID':'category',
 '1':'category','2':'category','3':'category','4':'category','5':'category'})
 
-mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv",dtype={'USER_ID':'category',
-                                                                       'MEAN_WATCH_COUNT':np.uint32})
+mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv")
+mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':'category','MEAN_WATCH_COUNT':np.uint32})
 
 
 meta = pd.read_excel(data_path+"meta_combined.xlsx")
@@ -79,12 +78,15 @@ meta = meta.merge(mean_watch_count,how='left',on='MOVIE_ID')
 print("Meta data:")
 print(meta[:10])
 
-train_key = train.columns
+reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
+                                       'MOVIE_ID':'category',
+                                       'TARGET':np.float32},
+                     chunksize=100000)
 
-del(train)
+train_key = reader.columns
+
 
 train = pd.DataFrame(columns=train_key.append(meta.columns).unique())
-test = pd.DataFrame(columns=train_key.append(meta.columns).unique())
 
 
 def preprocess_train(x):
@@ -92,22 +94,23 @@ def preprocess_train(x):
     print(tmp_train)
     train = pd.concat([train,tmp_train])
 
-reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
-                                       'MOVIE_ID':'category',
-                                       'TARGET':np.float32},
-                     chunksize=100000)
 
 [preprocess_train(r) for r in reader]
 print(train)
+
+
+reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
+                   dtype={'USER_ID':'category', 'MOVIE_ID':'category'},
+                     chunksize=100000)
+
+test_key = reader.columns
+
+test = pd.DataFrame(columns=test_key.append(meta.columns).unique())
 
 def preprocess_test(x):
     tmp_test = x.merge(meta, on='m',how='left')
     print(tmp_test)
     test = pd.concat([test,tmp_test])
-
-reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
-                   dtype={'USER_ID':'category', 'MOVIE_ID':'category'},
-                     chunksize=100000)
 
 [preprocess_test(r) for r in reader]
 print(test)

@@ -110,20 +110,21 @@ def clean(text):
         return cleantext, int(year[0][1:-1])
     else: return cleantext, 0
 
-movie_data = pd.read_excel("meta.xlsx")
+movie_data = pd.read_excel("C:\\Users\msi\Desktop\Soohyun\CHALLENGERS\TBCC\Final_DATA\\tbcc_combined.xlsx")
 output = []
-for movie in movie_data.values[:]:
+for movie in movie_data.values[:10]:
     mid = int(movie[0])
     title = movie[1]
     title, year = clean(title)
     meta = str(movie[6]).split(',')[0]
     # print(meta)
     ret = getInfoFromNaver(u"%s"%title,meta,year,title)
-    ret = [mid] + ret
     if len(ret) > 0:
+        ret = [mid] + ret
         output.append(ret)
     time.sleep(0.1)
 
 df = pd.DataFrame(output)
-df.to_csv("naver_crawled.csv", index_label=False)
+print(df)
+df.to_excel("naver_crawled.xlsx",columns=['MOVIE_ID','TITLE','SUBTITLE','PUBYEAR','ACTOR','RATING','DIRECTOR'])
 # getInfoFromNaver(u"007 제1탄-살인번호")
