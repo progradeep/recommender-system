@@ -36,7 +36,7 @@ watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
 watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
 
 top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
-top5_duration = top5_duration.astype(dtype={'MOVIE_ID':'category',
+top5_duration = top5_duration.astype(dtype={'USER_ID':'category',
 '1':'category','2':'category','3':'category','4':'category','5':'category'})
 
 mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv")
@@ -52,19 +52,23 @@ meta['TYPE'] = meta['TYPE'].astype('category')
 meta['GENRE'] = meta['GENRE'].astype('category')
 meta['DIRECTOR'] = meta['DIRECTOR'].astype('category')
 
+
+meta = meta.merge(watch_count,how='left',on='MOVIE_ID')
+
+
 meta['MAKE_YEAR'].fillna(2000, inplace=True)
 meta['MAKE_YEAR'] = meta['MAKE_YEAR'].astype(np.uint16)
 
-meta['COUNTRY'] = meta['COUNTRY'].cat.add_categories['no_country']
+meta['COUNTRY'] = meta['COUNTRY'].cat.add_categories(['no_country'])
 meta['COUNTRY'].fillna('no_country', inplace=True)
 
-meta['TYPE'] = meta['TYPE'].cat.add_categories['no_type']
+meta['TYPE'] = meta['TYPE'].cat.add_categories(['no_type'])
 meta['TYPE'].fillna('no_type', inplace=True)
 
-meta['GENRE'] = meta['GENRE'].cat.add_categories['no_genre']
+meta['GENRE'] = meta['GENRE'].cat.add_categories(['no_genre'])
 meta['GENRE'].fillna('no_genre', inplace=True)
 
-meta['DIRECTOR'] = meta['DIRECTOR'].cat.add_categories['no_type']
+meta['DIRECTOR'] = meta['DIRECTOR'].cat.add_categories(['no_dir'])
 meta['DIRECTOR'].fillna('no_type', inplace=True)
 
 meta['BOXOFFICE'].fillna(0, inplace=True)
@@ -75,9 +79,6 @@ meta['WATCH_COUNT'] = meta['WATCH_COUNT'].astype(np.uint32)
 
 print(meta.dtypes)
 
-meta = meta.merge(watch_count,how='left',on='MOVIE_ID')
-meta = meta.merge(top5_duration,how='left',on='MOVIE_ID')
-meta = meta.merge(mean_watch_count,how='left',on='MOVIE_ID')
 
 print("Meta data:")
 print(meta[:10])
@@ -119,6 +120,10 @@ def preprocess_test(x):
 [preprocess_test(r) for r in reader]
 print(test)
 
+train = train.merge(top5_duration,how='left',on='USER_ID')
+train = train.merge(mean_watch_count,how='left',on='USER_ID')
+test = test.merge(top5_duration,how='left',on='USER_ID')
+test = test.merge(mean_watch_count,how='left',on='USER_ID')
 
 print("merge finished")
 
