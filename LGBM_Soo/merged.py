@@ -31,9 +31,9 @@ data_path = "../../data/"
 # print(train[:10])
 
 print("Loading meta data")
-watch_count = pd.read_csv(data_path+"watch_count.csv")
-watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
-watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
+# watch_count = pd.read_csv(data_path+"watch_count.csv")
+# watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
+# watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
 
 top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
 top5_duration = top5_duration.astype(dtype={'USER_ID':'category',
@@ -53,7 +53,7 @@ meta['GENRE'] = meta['GENRE'].astype('category')
 meta['DIRECTOR'] = meta['DIRECTOR'].astype('category')
 
 
-meta = meta.merge(watch_count,how='left',on='MOVIE_ID')
+# meta = meta.merge(watch_count,how='left',on='MOVIE_ID')
 
 meta['MOVIE_ID'] = meta['MOVIE_ID'].astype(np.uint32)
 
@@ -76,8 +76,8 @@ meta['DIRECTOR'].fillna('no_dir', inplace=True)
 meta['BOXOFFICE'].fillna(0, inplace=True)
 meta['BOXOFFICE'] = meta['BOXOFFICE'].astype(np.uint32)
 
-meta['WATCH_COUNT'].fillna(0, inplace=True)
-meta['WATCH_COUNT'] = meta['WATCH_COUNT'].astype(np.uint32)
+# meta['WATCH_COUNT'].fillna(0, inplace=True)
+# meta['WATCH_COUNT'] = meta['WATCH_COUNT'].astype(np.uint32)
 
 print(meta.dtypes)
 
@@ -91,13 +91,12 @@ tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID','TARGET'])
 reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
                                        'MOVIE_ID':np.uint32,
                                        'TARGET':np.float32},
-                     chunksize=100000)
+                     chunksize=1000000)
 
 train_key = tmp.columns
 del(tmp)
 
 train = pd.DataFrame(columns=train_key.append(meta.columns).unique())
-train.to_csv(data_path+"FINAL_train_merged.csv")
 
 train['USER_ID'] = train['USER_ID'].astype('category')
 train['MOVIE_ID'] = train['MOVIE_ID'].astype(np.uint32)
@@ -108,14 +107,13 @@ train['TYPE'] = train['TYPE'].astype('category')
 train['GENRE'] = train['GENRE'].astype('category')
 train['DIRECTOR'] = train['DIRECTOR'].astype('category')
 train['BOXOFFICE'] = train['BOXOFFICE'].astype(np.uint32)
-train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
+# train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
 
 
 def preprocess_train(x):
     x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
     tmp_train = x.merge(meta, on='MOVIE_ID',how='left')
     return tmp_train
-    # tmp_train.to_csv(data_path+"FINAL_train_merged.csv",mode='a',index_label=False,header=None)
 
 
 for r in reader:
@@ -139,7 +137,7 @@ print(train[:10])
 # merge test and meta
 reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
                    dtype={'USER_ID':'category', 'MOVIE_ID':np.uint32},
-                     chunksize=100000)
+                     chunksize=1000000)
 
 tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
 
@@ -148,13 +146,14 @@ del(tmp)
 
 test = pd.DataFrame(columns=test_key.append(meta.columns).unique())
 
-def preprocess_test(x,test):
+def preprocess_test(x):
     x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
     tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
-    train = test.append(tmp_test)
+    return tmp_test
 
-[preprocess_test(r,test) for r in reader]
-
+for r in reader:
+    test = test.append(preprocess_test(r))
+    print(test.shape)
 
 test = test.merge(top5_duration,how='left',on='USER_ID')
 test = test.merge(mean_watch_count,how='left',on='USER_ID')

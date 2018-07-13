@@ -50,10 +50,6 @@ def findItemByInput(items, meta,year,title):
         naverDirector = ",".join(naverDirector.split("|")[:-1])
 
 
-
-
-
-
         navertitle1 = navertitle.replace(" ","")
         navertitle1 = navertitle1.replace("-", ",")
         navertitle1 = navertitle1.replace(":", ",")
@@ -63,6 +59,16 @@ def findItemByInput(items, meta,year,title):
 
         #네이버가 다루는 영화 고유 ID를 얻어 옵니다다
         naverid = re.split("code=", naverlink)[1]
+
+        review_html = get_soup("https://movie.naver.com/movie/bi/mi/point.nhn?code="+naverid)
+        # content > div.article > div.mv_info_area > div.mv_info > dl > dd:nth-child(2) > p > span:nth-child(3)
+        movie_length = review_html.find("div",{'id':"content"}).find('div',{'class':'article'}).\
+            find('div',{'class':'mv_info_area'}).find('div',{'class':'mv_info'}).find('dl',{'class':'info_spec'}).\
+            find('dt',{'class':'step1'})
+
+
+        print(movie_length)
+
 
         if str(title).replace(" ","") == str(navertitle).replace(" ",""):
             if (naverpubdate != "" and int(naverpubdate) == year) or (meta in naverDirector) or index+1==total_len:
