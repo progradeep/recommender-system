@@ -64,7 +64,7 @@ def findItemByInput(items, meta,year,title):
         # content > div.article > div.mv_info_area > div.mv_info > dl > dd:nth-child(2) > p > span:nth-child(3)
         movie_length = review_html.find("div",{'id':"content"}).find('div',{'class':'article'}).\
             find('div',{'class':'mv_info_area'}).find('div',{'class':'mv_info'}).find('dl',{'class':'info_spec'}).\
-            find('dt',{'class':'step1'})
+            find('dd')
 
 
         print(movie_length)

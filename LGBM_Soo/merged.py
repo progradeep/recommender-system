@@ -36,11 +36,11 @@ print("Loading meta data")
 # watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
 
 top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
-top5_duration = top5_duration.astype(dtype={'USER_ID':'category',
+top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
 '1':'category','2':'category','3':'category','4':'category','5':'category'})
 
 mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv")
-mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':'category','MEAN_WATCH_COUNT':np.uint32})
+mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,'MEAN_WATCH_COUNT':np.uint32})
 
 
 meta = pd.read_excel(data_path+"meta_combined.xlsx")
@@ -91,14 +91,14 @@ tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID','TARGET'])
 reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
                                        'MOVIE_ID':np.uint32,
                                        'TARGET':np.float32},
-                     chunksize=1000000)
+                     chunksize=10000000)
 
 train_key = tmp.columns
 del(tmp)
 
 train = pd.DataFrame(columns=train_key.append(meta.columns).unique())
 
-train['USER_ID'] = train['USER_ID'].astype('category')
+train['USER_ID'] = train['USER_ID'].astype(np.uint32)
 train['MOVIE_ID'] = train['MOVIE_ID'].astype(np.uint32)
 train['TITLE'] = train['TITLE'].astype('category')
 train['MAKE_YEAR'] = train['MAKE_YEAR'].astype(np.uint16)
@@ -129,6 +129,7 @@ train = train.merge(top5_duration,how='left',on='USER_ID')
 train = train.merge(mean_watch_count,how='left',on='USER_ID')
 
 train['MOVIE_ID'] = train['MOVIE_ID'].astype('category')
+train['USER_ID'] = train['USER_ID'].astype('category')
 
 print("Train data:")
 print(train[:10])
@@ -136,7 +137,7 @@ print(train[:10])
 
 # merge test and meta
 reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
-                   dtype={'USER_ID':'category', 'MOVIE_ID':np.uint32},
+                   dtype={'USER_ID':np.uint32, 'MOVIE_ID':np.uint32},
                      chunksize=1000000)
 
 tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
@@ -158,7 +159,9 @@ for r in reader:
 test = test.merge(top5_duration,how='left',on='USER_ID')
 test = test.merge(mean_watch_count,how='left',on='USER_ID')
 
+
 test['MOVIE_ID'] = test['MOVIE_ID'].astype('category')
+test['USER_ID'] = test['USER_ID'].astype('category')
 
 print("Test data:")
 print(test[:10])
