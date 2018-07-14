@@ -235,9 +235,9 @@ for r in reader:
 subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
 """
 test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',dtype={'USER_ID':'category',
-                                       'MOVIE_ID':'category',
-                                       'TARGET':np.float32})
-
+                                       'MOVIE_ID':'category'})
+print("Load test data")
+print(test[:10])
 subm = pd.DataFrame()
 for step in range(total_step):
     if step == 2 : break
