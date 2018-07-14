@@ -6,33 +6,49 @@ import re
 data_path = "../../data/"
 with open(data_path+"ae_total.csv",'r') as f:
     watched_movie = f.readlines()
-print(watched_movie)
-watched_movie = watched_movie[393186:]
+watched_movie = watched_movie[393187:]
 
 # user 1: movie 1, movie 2, movie 3, ... ,movie N
+watched_movie = [l.strip().split(',') for l in watched_movie]
 
-print(watched_movie)
+watched_movie = pd.DataFrame(watched_movie)
 
-watch_count = pd.read_csv(data_path+"watch_count.csv", header=None)
-watch_count.columns = ['MOIVE_ID',"WATCH_COUNT"]
+print(watched_movie[:10])
+
+watch_count = pd.read_csv(data_path+"watch_count.csv")
+print(watch_count)
+
 watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
 # movie 1, count
 # movie 2, count
 
-watch_count = watch_count.sort_values(by='MOVIE_ID',ascending=True)
 print(watch_count)
 
-output = {}
-for userId in range(watched_movie.shape[0]):
-    # iterate over user ids
-    w_movies = np.array(watched_movie[userId:userId+1].dropna(axis='columns'),dtype=int).squeeze()
-    print(w_movies)
-    w_count = watch_count.iloc[w_movies]
-    print(w_count)
-    output[userId] = w_count['WATCH_COUNT'].mean()
-    print(output)
+total_count = np.arange(8259)
+total = pd.DataFrame(total_count)
+total.columns = ['MOVIE_ID']
+total['WATCH_COUNT'] = 0.0
+# df.loc[df['A'] == 'foo']
 
-out = pd.DataFrame(output,columns=["USER_ID",'MEAN_COUNT'])
+for w in range(watch_count.shape[0]):
+    w = watch_count[w:w+1]
+    try:
+        mid = int(w['MOVIE_ID'])
+    except: continue
+    wc = int(w['WATCH_COUNT'])
+    
+    total.loc[mid,'WATCH_COUNT'] = wc
+print(total)
+
+output = []
+for userId in range(len(watched_movie)):
+    # iterate over user ids
+    w_movies = np.array(watched_movie[userId:userId+1].dropna(axis='columns'),dtype=int)[0] # user i's watched movie
+    print(userId,w_movies,type(w_movies))
+    w_count = total.loc[w_movies]
+    output.append([userId+393187, int(w_count['WATCH_COUNT'].mean())])
+out = pd.DataFrame(output)
+print(out)
 out.to_csv(data_path+'mean_watch_count_Q.csv')
 
 

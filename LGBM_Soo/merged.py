@@ -165,7 +165,7 @@ params = {
         'feature_fraction': 0.9,
         'feature_fraction_seed': 1,
         'max_bin': 256,
-        'num_rounds': 40,
+        'num_rounds': 5,
         'metric' : 'auc'
     }
 
@@ -189,17 +189,26 @@ tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
 
 test_key = tmp.columns
 del(tmp)
+top5_duration = pd.read_csv(data_path+'top_5_duration_Q.csv')
+top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
+'1':'category','2':'category','3':'category','4':'category','5':'category'})
 
+mean_watch_count = pd.read_csv(data_path+'mean_watch_count_Q.csv')
+mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,
+'MEAN_WATCH_COUNT':np.uint32})
 
 def preprocess_test(x):
     x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
     tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
     tmp_test = tmp_test.merge(top5_duration,how='left',on='USER_ID')
+    x['USER_ID'] = x['USER_ID'].astype(np.uint32)
     tmp_test = tmp_test.merge(mean_watch_count,how='left',on='USER_ID')
     tmp_test['MOVIE_ID'] = tmp_test['MOVIE_ID'].astype('category')
     tmp_test['USER_ID'] = tmp_test['USER_ID'].astype('category')
     tmp_test = tmp_test.drop(tmp_test.columns[tmp_test.columns.str.contains('unnamed', case=False)], axis=1)
     print(tmp_test.shape)
+    print(tmp_test[:10])
+    print(tmp_test[9000:9010])
     return tmp_test
 
 
