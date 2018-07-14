@@ -240,12 +240,12 @@ print("Load test data")
 
 subm = pd.DataFrame()
 reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
-                   dtype={'USER_ID':np.uint32, 'MOVIE_ID':np.uint32},
+                   dtype={'USER_ID':"category", 'MOVIE_ID':"category"},
                      chunksize=batch_size)
 
 step = 0
 for r in reader:
-    if step == 2: break
+    # if step == 2: break
     predictions = lgbm_model.predict(r)
     temp = pd.DataFrame()
     temp['target'] = predictions
@@ -256,6 +256,7 @@ for r in reader:
     step += 1
     print('step: ' + str(step) + '/' + str(total_step))
 
+print("Saving...")
 subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
 #
 # for step in range(total_step):
