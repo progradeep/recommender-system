@@ -34,7 +34,7 @@ print("Loading meta data")
 # watch_count = pd.read_csv(data_path+"watch_count.csv")
 # watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
 # watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
-
+"""
 top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
 top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
 '1':'category','2':'category','3':'category','4':'category','5':'category'})
@@ -128,6 +128,12 @@ train = train.merge(mean_watch_count,how='left',on='USER_ID')
 
 train['MOVIE_ID'] = train['MOVIE_ID'].astype('category')
 train['USER_ID'] = train['USER_ID'].astype('category')
+"""
+
+### UNMERGED!
+train = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
+                                       'MOVIE_ID':'category',
+                                       'TARGET':np.float32})
 
 print("Train data:")
 train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False)],axis=1)
@@ -179,7 +185,7 @@ del(lgb_val)
 question_num = 810625237
 batch_size = 10000000
 total_step = question_num // batch_size + 1
-
+"""
 # read test data
 reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
                    dtype={'USER_ID':np.uint32, 'MOVIE_ID':np.uint32},
@@ -227,21 +233,27 @@ for r in reader:
     step += 1
 
 subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
-#
-# for step in range(total_step):
-#     if step == total_step - 1:
-#         test_batch = test[step * batch_size:]
-#     else:
-#         test_batch = test[step * batch_size:(step + 1) * batch_size]
-#
-#
-#     temp = pd.DataFrame()
-#     temp['target'] = predictions
-#     if step == 0:
-#         subm = temp
-#     else:
-#         subm = pd.concat([subm, temp])
-#
-#     print('step: ' + str(step) + '/' + str(total_step))
-#
-# subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
+"""
+test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',dtype={'USER_ID':'category',
+                                       'MOVIE_ID':'category',
+                                       'TARGET':np.float32})
+
+subm = pd.DataFrame()
+for step in range(total_step):
+    if step == 2 : break
+    if step == total_step - 1:
+        test_batch = test[step * batch_size:]
+    else:
+        test_batch = test[step * batch_size:(step + 1) * batch_size]
+
+    predictions = lgbm_model.predict(test_batch)
+    temp = pd.DataFrame()
+    temp['target'] = predictions
+    if step == 0:
+        subm = temp
+    else:
+        subm = pd.concat([subm, temp])
+
+    print('step: ' + str(step) + '/' + str(total_step))
+
+subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
