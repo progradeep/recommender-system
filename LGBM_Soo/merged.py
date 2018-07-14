@@ -234,26 +234,45 @@ for r in reader:
 
 subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
 """
-test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',dtype={'USER_ID':'category',
-                                       'MOVIE_ID':'category'})
+# test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',dtype={'USER_ID':'category',
+#                                        'MOVIE_ID':'category'})
 print("Load test data")
-print(test[:10])
-subm = pd.DataFrame()
-for step in range(total_step):
-    if step == 2 : break
-    if step == total_step - 1:
-        test_batch = test[step * batch_size:]
-    else:
-        test_batch = test[step * batch_size:(step + 1) * batch_size]
 
-    predictions = lgbm_model.predict(test_batch)
+subm = pd.DataFrame()
+reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
+                   dtype={'USER_ID':np.uint32, 'MOVIE_ID':np.uint32},
+                     chunksize=batch_size)
+
+step = 0
+for r in reader:
+    if step == 2: break
+    predictions = lgbm_model.predict(r)
     temp = pd.DataFrame()
     temp['target'] = predictions
     if step == 0:
         subm = temp
     else:
         subm = pd.concat([subm, temp])
-
+    step += 1
     print('step: ' + str(step) + '/' + str(total_step))
 
 subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
+#
+# for step in range(total_step):
+#     if step == 2 : break
+#     if step == total_step - 1:
+#         test_batch = test[step * batch_size:]
+#     else:
+#         test_batch = test[step * batch_size:(step + 1) * batch_size]
+#
+#     predictions = lgbm_model.predict(test_batch)
+#     temp = pd.DataFrame()
+#     temp['target'] = predictions
+#     if step == 0:
+#         subm = temp
+#     else:
+#         subm = pd.concat([subm, temp])
+#
+#     print('step: ' + str(step) + '/' + str(total_step))
+#
+# subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
