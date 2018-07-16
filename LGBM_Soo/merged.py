@@ -31,13 +31,13 @@ data_path = "../../data/"
 # print(train[:10])
 
 print("Loading meta data")
-# watch_count = pd.read_csv(data_path+"watch_count.csv")
-# watch_count.columns = ['MOVIE_ID',"WATCH_COUNT"]
-# watch_count = watch_count.astype(dtype={'MOVIE_ID':'category', 'WATCH_COUNT':np.uint32})
+watch_count = pd.read_csv(data_path+"watch_count.csv")
+watch_count = watch_count.astype(dtype={'MOVIE_ID':np.uint32, 'WATCH_COUNT':np.uint32})
 """
-top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
-top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
-'1':'category','2':'category','3':'category','4':'category','5':'category'})
+#top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
+#top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
+#'1':'category','2':'category','3':'category','4':'category','5':'category'})
+
 
 mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv")
 mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,'MEAN_WATCH_COUNT':np.uint32})
@@ -95,10 +95,12 @@ reader = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
 train_key = tmp.columns
 del(tmp)
 
-train = pd.DataFrame(columns=train_key.append(meta.columns).unique())
+#train = pd.DataFrame(columns=train_key.append(meta.columns).unique())
 
 train['USER_ID'] = train['USER_ID'].astype(np.uint32)
 train['MOVIE_ID'] = train['MOVIE_ID'].astype(np.uint32)
+
+
 train['TITLE'] = train['TITLE'].astype('category')
 train['MAKE_YEAR'] = train['MAKE_YEAR'].astype(np.uint16)
 train['COUNTRY'] = train['COUNTRY'].astype('category')
@@ -106,7 +108,8 @@ train['TYPE'] = train['TYPE'].astype('category')
 train['GENRE'] = train['GENRE'].astype('category')
 train['DIRECTOR'] = train['DIRECTOR'].astype('category')
 train['BOXOFFICE'] = train['BOXOFFICE'].astype(np.uint32)
-# train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
+
+train['WATCH_COUNT'] = train['WATCH_COUNT'].astype(np.uint32)
 
 
 def preprocess_train(x):
@@ -120,28 +123,36 @@ for r in reader:
     print(train.shape)
 
 print(train[:10])
+"""
+
+train = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
+                                       'MOVIE_ID':np.uint32,
+                                       'TARGET':np.uint32})
 
 train['USER_ID'] = train['USER_ID'].astype(np.uint32)
 
-train = train.merge(top5_duration,how='left',on='USER_ID')
-train = train.merge(mean_watch_count,how='left',on='USER_ID')
+#train = train.merge(top5_duration,how='left',on='USER_ID')
+train = train.merge(watch_count, how='left',on='MOVIE_ID')
+
+#train = train.merge(mean_watch_count,how='left',on='USER_ID')
 
 train['MOVIE_ID'] = train['MOVIE_ID'].astype('category')
 train['USER_ID'] = train['USER_ID'].astype('category')
+train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False)],axis=1)
+
+print("TRAIN")
+print(train[:100])
+
 """
 
 ### UNMERGED!
-train = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
-                                       'MOVIE_ID':'category',
-                                       'TARGET':np.float32})
 
-print("Train data:")
-train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False)],axis=1)
+
 #      df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1)
 
 print(train[:10])
 
-
+"""
 
 # splitting test and train set
 print("Splitting into train and val")
@@ -171,7 +182,7 @@ params = {
         'feature_fraction': 0.9,
         'feature_fraction_seed': 1,
         'max_bin': 256,
-        'num_rounds': 5,
+        'num_rounds': 40,
         'metric' : 'auc'
     }
 
@@ -185,7 +196,7 @@ del(lgb_val)
 question_num = 810625237
 batch_size = 10000000
 total_step = question_num // batch_size + 1
-"""
+
 # read test data
 reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
                    dtype={'USER_ID':np.uint32, 'MOVIE_ID':np.uint32},
@@ -195,20 +206,24 @@ tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
 
 test_key = tmp.columns
 del(tmp)
-top5_duration = pd.read_csv(data_path+'top_5_duration_Q.csv')
-top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
-'1':'category','2':'category','3':'category','4':'category','5':'category'})
+#top5_duration = pd.read_csv(data_path+'top_5_duration_Q.csv')
+#top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
+#'1':'category','2':'category','3':'category','4':'category','5':'category'})
 
-mean_watch_count = pd.read_csv(data_path+'mean_watch_count_Q.csv')
-mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,
-'MEAN_WATCH_COUNT':np.uint32})
+watch_count = watch_count.astype(dtype={'MOVIE_ID':np.uint32,'WATCH_COUNT':np.uint32})
+
+#mean_watch_count = pd.read_csv(data_path+'mean_watch_count_Q.csv')
+#mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,
+#'MEAN_WATCH_COUNT':np.uint32})
 
 def preprocess_test(x):
     x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
-    tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
-    tmp_test = tmp_test.merge(top5_duration,how='left',on='USER_ID')
-    x['USER_ID'] = x['USER_ID'].astype(np.uint32)
-    tmp_test = tmp_test.merge(mean_watch_count,how='left',on='USER_ID')
+    #tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
+    
+    tmp_test = x.merge(watch_count,how='left',on='MOVIE_ID')
+    #tmp_test = tmp_test.merge(top5_duration,how='left',on='USER_ID')
+    #tmp_test = tmp_test.merge(mean_watch_count,how='left',on='USER_ID')
+    
     tmp_test['MOVIE_ID'] = tmp_test['MOVIE_ID'].astype('category')
     tmp_test['USER_ID'] = tmp_test['USER_ID'].astype('category')
     tmp_test = tmp_test.drop(tmp_test.columns[tmp_test.columns.str.contains('unnamed', case=False)], axis=1)
@@ -221,6 +236,7 @@ def preprocess_test(x):
 subm = pd.DataFrame()
 step = 0
 for r in reader:
+    #if step == 2: break
     predictions = lgbm_model.predict(preprocess_test(r))
     temp = pd.DataFrame()
     temp['target'] = predictions
@@ -232,7 +248,10 @@ for r in reader:
     print('step: ' + str(step) + '/' + str(total_step))
     step += 1
 
+print("SAVING..")
+
 subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
+
 """
 # test = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',dtype={'USER_ID':'category',
 #                                        'MOVIE_ID':'category'})
@@ -245,7 +264,7 @@ reader = pd.read_csv(data_path+'KISA_TBC_NEG_QUESTION.csv',
 
 step = 0
 for r in reader:
-    # if step == 2: break
+    #if step == 2: break
     predictions = lgbm_model.predict(r)
     temp = pd.DataFrame()
     temp['target'] = predictions
@@ -277,3 +296,4 @@ subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=Fals
 #     print('step: ' + str(step) + '/' + str(total_step))
 #
 # subm.to_csv(data_path + 'lgbm_submission.csv.gz', compression='gzip', index=False, float_format='%.5f')
+"""
