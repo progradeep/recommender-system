@@ -33,6 +33,10 @@ data_path = "../../data/"
 print("Loading meta data")
 watch_count = pd.read_csv(data_path+"watch_count.csv")
 watch_count = watch_count.astype(dtype={'MOVIE_ID':np.uint32, 'WATCH_COUNT':np.uint32})
+
+top_duration = pd.read_csv(data_path+'top_1_duration.csv')
+top_duration = top_duration.astype(dtype={'USER_ID':np.uint32, '1':np.uint32})
+
 """
 #top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
 #top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
@@ -125,34 +129,25 @@ for r in reader:
 print(train[:10])
 """
 
-train = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':'category',
+train = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':np.uint32,
                                        'MOVIE_ID':np.uint32,
                                        'TARGET':np.uint32})
 
-train['USER_ID'] = train['USER_ID'].astype(np.uint32)
 
 #train = train.merge(top5_duration,how='left',on='USER_ID')
 train = train.merge(watch_count, how='left',on='MOVIE_ID')
+train = train.merge(top_duration, how='left', on='USER_ID')
 
 #train = train.merge(mean_watch_count,how='left',on='USER_ID')
 
 train['MOVIE_ID'] = train['MOVIE_ID'].astype('category')
 train['USER_ID'] = train['USER_ID'].astype('category')
 train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False)],axis=1)
+train = train.drop(['USER_ID'],axis=1)
 
 print("TRAIN")
 print(train[:100])
 
-"""
-
-### UNMERGED!
-
-
-#      df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1)
-
-print(train[:10])
-
-"""
 
 # splitting test and train set
 print("Splitting into train and val")
@@ -210,7 +205,6 @@ del(tmp)
 #top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
 #'1':'category','2':'category','3':'category','4':'category','5':'category'})
 
-watch_count = watch_count.astype(dtype={'MOVIE_ID':np.uint32,'WATCH_COUNT':np.uint32})
 
 #mean_watch_count = pd.read_csv(data_path+'mean_watch_count_Q.csv')
 #mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,
@@ -221,12 +215,15 @@ def preprocess_test(x):
     #tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
     
     tmp_test = x.merge(watch_count,how='left',on='MOVIE_ID')
+    tmp_test = tmp_test.merge(top_duration, how='left', on='USER_ID')
     #tmp_test = tmp_test.merge(top5_duration,how='left',on='USER_ID')
     #tmp_test = tmp_test.merge(mean_watch_count,how='left',on='USER_ID')
     
     tmp_test['MOVIE_ID'] = tmp_test['MOVIE_ID'].astype('category')
     tmp_test['USER_ID'] = tmp_test['USER_ID'].astype('category')
     tmp_test = tmp_test.drop(tmp_test.columns[tmp_test.columns.str.contains('unnamed', case=False)], axis=1)
+    tmp_test = tmp_test.drop(['USER_ID'],axis=1)
+
     print(tmp_test.shape)
     print(tmp_test[:10])
     print(tmp_test[9000:9010])
