@@ -17,7 +17,7 @@ def cleanhtml(raw_html):
     return cleantext
 
 def searchByTitle(title):
-    myurl = 'https://openapi.naver.com/v1/search/movie.json?display=100&query=' + quote(title)
+    myurl = 'https://openapi.naver.com/v1/search/movie.json?display=100&yearfrom=1960&yearto=2017&query=' + quote(title)
     request = urllib.request.Request(myurl)
     request.add_header("X-Naver-Client-Id",naver_client_id)
     request.add_header("X-Naver-Client-Secret",naver_client_secret)
@@ -38,6 +38,8 @@ def findItemByInput(items, meta,year,title):
     total_len = len(items)
     compare = []
     for index, item in enumerate(items):
+        if index > 10: return []
+
         navertitle = cleanhtml(item['title'])
         naversubtitle = cleanhtml(item['subtitle'])
         naverpubdate = cleanhtml(item['pubDate'])
@@ -66,38 +68,76 @@ def findItemByInput(items, meta,year,title):
             movie_step1 = review_html.find("div",{'id':"content"}).find('div',{'class':'article'}).\
             find('div',{'class':'mv_info_area'}).find('div',{'class':'mv_info'}).find('dl',{'class':'info_spec'}).\
             find('dd').find('p').find_all("span")
-            movie_length = 0
+            movie_length = None
 
             for i in movie_step1:
                 if '분' in i.text:
                     movie_length = int(i.text.replace('분', ''))
                     break
         except:
-            movie_length = 0
+            movie_length = None
         # print(naverid)
-
-
-
 
 
         # netizen_point_tab_inner > span > em
         try:
             rating_count = review_html.find('div',{'id':"netizen_point_tab_inner"}).find('span',{'class':'user_count'}).find('em').text
+            rating_count = int(rating_count.replace(",",""))
 
         except AttributeError: rating_count = 0
 
-        if str(title).replace(" ","") == str(navertitle).replace(" ",""):
-            if (naverpubdate != "" and int(naverpubdate) == year) or (meta in naverDirector) or index+1==total_len:
-                # print(navertitle, meta, naverDirector, naverpubdate, year)
-                compare.append([naverid, navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector,movie_length,rating_count])
-                break
+        title = str(title.split(":")[0])
+        title = str(title.split("-")[0])
+        title = title.replace(" ","")
+
+        _navertitle = clean(navertitle)[0]
+        _navertitle = str(_navertitle.split(":")[0])
+        _navertitle = str(_navertitle.split("-")[0])
+        _navertitle = _navertitle.replace(" ","")
+
+        if year != 0 and year == int(naverpubdate) and title == _navertitle:
+            print(year,naverpubdate)
+            compare.append([naverid, navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector, movie_length,
+             rating_count])
+            return compare[-1]
+
+        # elif year != 0 and year == int(naverpubdate):
+        #     compare.append([naverid, navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector,
+        #                     movie_length,
+        #                     rating_count])
+        #     return compare[-1]
+
+
+        elif year == 0 and title == _navertitle:
+            compare.append([naverid, navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector,
+                            movie_length,
+                            rating_count])
+            continue
+
+
+        # if str(title).replace(" ","") == str(navertitle).replace(" ",""):
+        #     if (naverpubdate != "" and int(naverpubdate) == year) or index+1==total_len:
+        #         print(navertitle, meta, naverDirector, naverpubdate, year)
+                # compare.append([naverid, navertitle, naversubtitle, naverpubdate, naveractor, naveruserScore, naverDirector,movie_length,rating_count])
+                # break
 
         # 영화의 타이틀 이미지를 표시합니다
         # if (item['image'] != None and "http" in item['image']):
         #    response = requests.get(item['image'])
         #    img = Image.open(BytesIO(response.content))
         #    img.show()
-    if len(compare) > 0: return compare[-1]
+
+    if len(compare) > 0:
+        # print(compare)
+        compare = pd.DataFrame(compare)
+        print(compare)
+        compare = compare.sort_values(by=8,ascending=False)
+        compare = compare.values.tolist()
+        # print(compare)
+        return compare[0]
+
+
+
     return compare
 
 def getInfoFromNaver(searchTitle,meta,year,title):
@@ -126,30 +166,41 @@ def get_soup(url):
 #         return 0.0
 
 def clean(text):
-    y = re.compile("\([1-9]*\)")
-    year = y.findall(str(text))
+    y = str(text).find("(")
+    year = 0
+    if y != -1:
+        year = str(text)[y+1:y+5]
+        try:
+            year = int(year)
+        except ValueError:
+            year = 0
+        print(year)
+    # year = y.findall(str(text))
     p = re.compile('\[.*?\]|\(.*?\)')
     cleantext = p.sub("",str(text))
-    if len(year) != 0:
-        return cleantext, int(year[0][1:-1])
+
+    if year != 0:
+        return cleantext, int(year)
     else: return cleantext, 0
 
-movie_data = pd.read_excel("C:\\Users\msi\Desktop\Soohyun\CHALLENGERS\TBCC\Final_DATA\\tbcc_combined.xlsx")
+movie_data = pd.read_excel("C:\\Users\msi\Desktop\Soohyun\CHALLENGERS\TBCC\Final_DATA\TBC_MOVIES_TITLE.xlsx")
+
 output = []
 for movie in movie_data.values[:]:
     mid = int(movie[0])
     print(mid)
     title = movie[1]
     title, year = clean(title)
-    meta = str(movie[6]).split(',')[0]
+    meta = title
     # print(meta)
     ret = getInfoFromNaver(u"%s"%title,meta,year,title)
     if len(ret) > 0:
         ret = [mid] + ret
         output.append(ret)
+        print(ret)
     time.sleep(0.1)
 
 df = pd.DataFrame(output)
 # print(df)
-df.to_excel("naver_crawled.xlsx",index_label=False)
+df.to_excel("Second_round.xlsx",index_label=False)
 # getInfoFromNaver(u"007 제1탄-살인번호")
