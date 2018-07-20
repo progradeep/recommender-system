@@ -31,22 +31,11 @@ data_path = "../../data/"
 # print(train[:10])
 
 print("Loading meta data")
-watch_count = pd.read_csv(data_path+"watch_count.csv")
-watch_count = watch_count.astype(dtype={'MOVIE_ID':np.uint32, 'WATCH_COUNT':np.uint32})
 
-top_duration = pd.read_csv(data_path+'top_1_duration.csv')
-top_duration = top_duration.astype(dtype={'USER_ID':np.uint32, '1':np.uint32})
+user_pref = pd.read_csv(data_path+'user_pref.csv', dtype={'USER_ID':np.uint32, 'GENRE':'category', 'NATION':'category'})
+mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv", dtype={'USER_ID':np.uint32,'MEAN_WATCH_COUNT':np.uint32})
 
 """
-#top5_duration = pd.read_csv(data_path+'top_5_duration.csv')
-#top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
-#'1':'category','2':'category','3':'category','4':'category','5':'category'})
-
-
-mean_watch_count = pd.read_csv(data_path+"mean_watch_count.csv")
-mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,'MEAN_WATCH_COUNT':np.uint32})
-
-
 meta = pd.read_excel(data_path+"meta_combined.xlsx")
 
 meta['TITLE'] = meta['TITLE'].astype('category')
@@ -79,11 +68,7 @@ meta['DIRECTOR'].fillna('no_dir', inplace=True)
 meta['BOXOFFICE'].fillna(0, inplace=True)
 meta['BOXOFFICE'] = meta['BOXOFFICE'].astype(np.uint32)
 
-# meta['WATCH_COUNT'].fillna(0, inplace=True)
-# meta['WATCH_COUNT'] = meta['WATCH_COUNT'].astype(np.uint32)
-
 print(meta.dtypes)
-
 
 print("Meta data:")
 print(meta[:10])
@@ -127,6 +112,7 @@ for r in reader:
     print(train.shape)
 
 print(train[:10])
+
 """
 
 train = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':np.uint32,
@@ -134,15 +120,13 @@ train = pd.read_csv(data_path+'train_tmp.csv',dtype={'USER_ID':np.uint32,
                                        'TARGET':np.uint32})
 
 
-#train = train.merge(top5_duration,how='left',on='USER_ID')
-train = train.merge(watch_count, how='left',on='MOVIE_ID')
-train = train.merge(top_duration, how='left', on='USER_ID')
-
-#train = train.merge(mean_watch_count,how='left',on='USER_ID')
+train = train.merge(user_pref, how='left',on='USER_ID')
+train = train.merge(mean_watch_count,how='left',on='USER_ID')
 
 train['MOVIE_ID'] = train['MOVIE_ID'].astype('category')
 train['USER_ID'] = train['USER_ID'].astype('category')
 train = train.drop(train.columns[train.columns.str.contains('unnamed',case=False)],axis=1)
+print(train[:100])
 train = train.drop(['USER_ID'],axis=1)
 
 print("TRAIN")
@@ -168,16 +152,16 @@ print('Processed data...')
 params = {
         'objective': 'binary',
         'boosting': 'gbdt',
-        'learning_rate': 0.2 ,
+        'learning_rate': 0.1 ,
         'verbose': 0,
-        'num_leaves': 100,
+        'num_leaves': 200,
         'bagging_fraction': 0.95,
         'bagging_freq': 1,
         'bagging_seed': 1,
         'feature_fraction': 0.9,
         'feature_fraction_seed': 1,
         'max_bin': 256,
-        'num_rounds': 40,
+        'num_rounds': 300,
         'metric' : 'auc'
     }
 
@@ -201,23 +185,15 @@ tmp = pd.DataFrame(columns=['USER_ID','MOVIE_ID'])
 
 test_key = tmp.columns
 del(tmp)
-#top5_duration = pd.read_csv(data_path+'top_5_duration_Q.csv')
-#top5_duration = top5_duration.astype(dtype={'USER_ID':np.uint32,
-#'1':'category','2':'category','3':'category','4':'category','5':'category'})
 
 
-#mean_watch_count = pd.read_csv(data_path+'mean_watch_count_Q.csv')
-#mean_watch_count = mean_watch_count.astype(dtype={'USER_ID':np.uint32,
-#'MEAN_WATCH_COUNT':np.uint32})
+mean_watch_count = pd.read_csv(data_path+'mean_watch_count_Q.csv', dtype={'USER_ID':np.uint32, 'MEAN_WATCH_COUNT':np.uint32})
 
 def preprocess_test(x):
-    x['MOVIE_ID'] = x['MOVIE_ID'].astype(np.uint32)
-    #tmp_test = x.merge(meta, on='MOVIE_ID',how='left')
+    x['USER_ID'] = x['USER_ID'].astype(np.uint32)
     
-    tmp_test = x.merge(watch_count,how='left',on='MOVIE_ID')
-    tmp_test = tmp_test.merge(top_duration, how='left', on='USER_ID')
-    #tmp_test = tmp_test.merge(top5_duration,how='left',on='USER_ID')
-    #tmp_test = tmp_test.merge(mean_watch_count,how='left',on='USER_ID')
+    tmp_test = x.merge(user_pref,how='left',on='USER_ID')
+    tmp_test = tmp_test.merge(mean_watch_count,how='left',on='USER_ID')
     
     tmp_test['MOVIE_ID'] = tmp_test['MOVIE_ID'].astype('category')
     tmp_test['USER_ID'] = tmp_test['USER_ID'].astype('category')

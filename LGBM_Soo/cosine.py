@@ -33,25 +33,30 @@ np.save(dataroot+"cosine_sim.npy",cos)
 # (itemsSimilarity(x, item(1)) + … + itemsSimilarity(x, item(K)))
 # (단, 식 표현 편의를 위해 itemsSimilarity(x, x) = 0 으로 가정한 식입니다.)
 cos = np.load("../../data/cosine_sim.npy")
-test = pd.read_csv("../../data/KISA_TBC_VIEWS_UNIQ_TEST.csv")
+np.fill_diagonal(cos, 0)
+test = pd.read_csv("../../data/KISA_TBC_VIEWS_UNIQ_QUESTION.csv")
+print(test)
+#divisor = np.sum(cos[:,:],axis=1)
 
 def calculate_sim(row):
     global cos
     user_id = row['USER_ID'].values[0]
     items = row['MOVIE_ID'].values
+    length = len(items)
+    out = cos[items,:]
+    out[:,items] = 0
 
-    out = []
-
-    for i in range(cos.shape[0]):
-        score = 0.
-        for m in items:
-            score += cos[i,int(m)]
-        score /= sum(cos[i,:])
-
-        out.append(score)
-
-    return user_id+sorted(range(len(out)), key=lambda i: out[i], reverse=True)[:50]
+    out = np.argmax(out,axis=1).astype(int)
+    
+    out = list(set(out))
+    print(out)
+    #out = sorted(range(len(out)), key=lambda i: out[i],reverse=True)
+    
+    #out = np.sum(cos[:,items], axis=1)
+    print(user_id,out)
+    return out  #sorted(range(len(out)), key=lambda i: out[i], reverse=True)[:50]
 
 
 grouped = test.groupby(by='USER_ID').apply(calculate_sim).tolist()
-
+out = pd.DataFrame(grouped,dtype=np.uint32).fillna(9000).astype(np.uint32)
+out.to_csv("../../data/similarity_score.csv")
